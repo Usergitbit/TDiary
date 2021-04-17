@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.30907.101
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TDiary.Web", "TDiary.Web\TDiary.Web.csproj", "{CB023256-1CA2-42C1-9230-56427D9E8B0D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TDiary.Api", "TDiary.Api\TDiary.Api.csproj", "{2F634A28-66F8-47E1-ABFE-AD7CA1A5E3F7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TDiary.Api", "TDiary.Api\TDiary.Api.csproj", "{2F634A28-66F8-47E1-ABFE-AD7CA1A5E3F7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TDiary.Common", "TDiary.Common\TDiary.Common.csproj", "{4F92A6F7-B2E5-4CE5-B625-E72A1C874113}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{2F634A28-66F8-47E1-ABFE-AD7CA1A5E3F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F634A28-66F8-47E1-ABFE-AD7CA1A5E3F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F634A28-66F8-47E1-ABFE-AD7CA1A5E3F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F92A6F7-B2E5-4CE5-B625-E72A1C874113}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F92A6F7-B2E5-4CE5-B625-E72A1C874113}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F92A6F7-B2E5-4CE5-B625-E72A1C874113}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F92A6F7-B2E5-4CE5-B625-E72A1C874113}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
