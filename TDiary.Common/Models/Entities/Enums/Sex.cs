@@ -6,7 +6,7 @@ namespace TDiary.Common.Models.Entities.Enums
 {
     public enum Sex
     {
-        Female = 0,
-        Male = 1
+        Female,
+        Male
     }
 }

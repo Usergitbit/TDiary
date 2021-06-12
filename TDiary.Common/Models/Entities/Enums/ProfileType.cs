@@ -6,5 +6,8 @@ namespace TDiary.Common.Models.Entities.Enums
 {
     public enum ProfileType
     {
+        Cut,
+        Maintenance,
+        Bulk
     }
 }
