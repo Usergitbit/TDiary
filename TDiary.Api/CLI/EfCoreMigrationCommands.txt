@@ -1,0 +1,1 @@
+add-migration Name_Here -project TDiary.Database

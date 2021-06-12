@@ -9,5 +9,6 @@ namespace TDiary.Common.Models.Entities
     {
         public string Name { get; set; }
         public double Weight { get; set; }
+        public List<DailyFoodItem> DailyFoodItems { get; set; } = new List<DailyFoodItem>();
     }
 }

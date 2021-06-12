@@ -4,7 +4,11 @@ using System.Text;
 
 namespace TDiary.Common.Models.Entities.Enums
 {
-    public enum ProfileType
+    public enum EventType
     {
+        Insert,
+        Update,
+        Delete,
+        Summary
     }
 }

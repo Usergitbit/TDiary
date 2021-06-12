@@ -8,5 +8,6 @@ namespace TDiary.Common.Models.Entities
     public class Brand : EntityBase
     {
         public string Name { get; set; }
+        public List<FoodItem> FoodItems { get; set; } = new List<FoodItem>();
     }
 }

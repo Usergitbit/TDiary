@@ -12,6 +12,9 @@ namespace TDiary.Common.Models.Entities
         public double Carbohydrates { get; set; }
         public double Proteins { get; set; }
         public double Fats { get; set; }
+        public double SaturatedFats { get; set; }
+        public Guid? BrandId { get; set; }
         public Brand Brand { get; set; }
+        public List<DailyFoodItem> DailyFoodItems { get; set; } = new List<DailyFoodItem>();
     }
 }
