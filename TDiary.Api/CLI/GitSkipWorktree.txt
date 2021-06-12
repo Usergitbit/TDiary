@@ -1,0 +1,2 @@
+git update-index --skip-worktree TDiary.Api\appsettings.Development.json
+git update-index --no-skip-worktree TDiary.Api\appsettings.Development.json
