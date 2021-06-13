@@ -1,0 +1,80 @@
+{
+	"info": {
+		"_postman_id": "8cb4ba81-b166-448f-a765-760458efe09b",
+		"name": "TDiary",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Access token retrieval",
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "grant_type",
+							"value": "authorization_code_with_pkce",
+							"type": "string"
+						},
+						{
+							"key": "scope",
+							"value": "openid profile tdiaryapi.full",
+							"type": "string"
+						},
+						{
+							"key": "clientId",
+							"value": "TDiary",
+							"type": "string"
+						},
+						{
+							"key": "accessTokenUrl",
+							"value": "https://localhost:5001/connect/token",
+							"type": "string"
+						},
+						{
+							"key": "authUrl",
+							"value": "https://localhost:5001/connect/authorize",
+							"type": "string"
+						},
+						{
+							"key": "redirect_uri",
+							"value": "https://localhost:5005/authentication/login-callback",
+							"type": "string"
+						},
+						{
+							"key": "tokenName",
+							"value": "TDiary",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "queryParams",
+							"type": "string"
+						},
+						{
+							"key": "challengeAlgorithm",
+							"value": "S256",
+							"type": "string"
+						},
+						{
+							"key": "client_authentication",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001"
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -28,6 +28,7 @@ namespace TDiary.Api.Grpc
         {
             try
             {
+                var user = context.GetHttpContext().User;
                 var eventEntity = new Event
                 {
                     Entity = "test",
