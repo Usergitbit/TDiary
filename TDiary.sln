@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TDiary.Api", "TDiary.Api\TD
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TDiary.Common", "TDiary.Common\TDiary.Common.csproj", "{4F92A6F7-B2E5-4CE5-B625-E72A1C874113}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TDiary.Database", "TDiary.Database\TDiary.Database.csproj", "{08C69A42-6CF0-483F-8B3F-8660942995BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TDiary.Database", "TDiary.Database\TDiary.Database.csproj", "{08C69A42-6CF0-483F-8B3F-8660942995BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

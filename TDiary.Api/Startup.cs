@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TDiary.Api.Grpc;
 using TDiary.Database;
 
 namespace TDiary.Api
@@ -49,6 +50,8 @@ namespace TDiary.Api
 
 
             services.AddControllers();
+            services.AddGrpc();
+            services.AddGrpcReflection();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
@@ -106,6 +109,11 @@ namespace TDiary.Api
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapGrpcService<EventRpc>();
+                if (env.IsDevelopment())
+                {
+                    endpoints.MapGrpcReflectionService();
+                }
             });
         }
     }

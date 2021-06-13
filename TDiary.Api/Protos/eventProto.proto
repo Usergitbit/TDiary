@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option csharp_namespace = "TDiary.Api.Protos";
+
+service EventProto {
+  rpc AddEvent (AddEventRequest) returns (AddEventReply);
+}
+
+message AddEventRequest {
+  string name = 1;
+}
+
+message AddEventReply {
+  string message = 1;
+  EventData eventData = 2;
+}
+
+message EventData {
+
+}
