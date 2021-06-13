@@ -1,4 +1,5 @@
 ﻿using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ using TDiary.Database;
 
 namespace TDiary.Api.Grpc
 {
+    [Authorize]
     public class EventRpc : EventProto.EventProtoBase
     {
         private readonly ILogger<EventRpc> logger;
