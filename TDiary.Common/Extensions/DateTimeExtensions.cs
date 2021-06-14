@@ -17,7 +17,7 @@ namespace TDiary.Common.Extensions
         }
 
         /// <summary>
-        /// Takes the date and creates a DateTime of DateTimeKind.Utc from it.
+        /// Takes the date and creates a DateTime of DateTimeKind.Utc from it using DateTime.MinValue when null.
         /// Does NOT do any conversions.
         /// </summary>
         /// <returns></returns>
