@@ -8,10 +8,12 @@ namespace TDiary.Common.Models.Base
     {
         public Guid Id { get; set; }
         public Guid CreatedBy { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime InsertedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public DateTime LocallyCreatedAt { get; set; }
-        public DateTime LocallyUpdatedAt { get; set; }
+        public DateTime LocallyCreatedAtUtc { get; set; }
+        public DateTime? LocallyModifiedAt { get; set; }
+        public DateTime? LocallyModifiedAtUtc { get; set; }
         public TimeZoneInfo TimeZone { get; set; }
         public Guid UserId { get; set; }
     }

@@ -15,6 +15,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TDiary.Api.Grpc;
+using TDiary.Api.Services;
+using TDiary.Api.Validators;
+using TDiary.Common.ServiceContracts;
 using TDiary.Database;
 
 namespace TDiary.Api
@@ -33,8 +36,18 @@ namespace TDiary.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<TDiaryDatabaseContext>(options => options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<TDiaryDatabaseContext>(options => 
+            {
+                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+                options.EnableSensitiveDataLogging();
+                options.EnableDetailedErrors();
+            });
+                
+            services.AddScoped<IEventService, EventService>();
 
+            services.AddSingleton<EventValidator>();
+
+            services.AddAutoMapper(GetType().Assembly);
 
             services.AddCors(options =>
             {
@@ -77,7 +90,7 @@ namespace TDiary.Api
                         {
                             Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
                         },
-                        new string[] {}
+                        Array.Empty<string>()
                     }
                 });
             });

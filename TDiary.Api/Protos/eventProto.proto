@@ -2,19 +2,40 @@ syntax = "proto3";
 
 option csharp_namespace = "TDiary.Api.Protos";
 
+import "google/protobuf/timestamp.proto";
+
 service EventProto {
   rpc AddEvent (AddEventRequest) returns (AddEventReply);
 }
 
 message AddEventRequest {
-  string name = 1;
+  EventData event_data = 2;
 }
 
 message AddEventReply {
   string message = 1;
-  EventData eventData = 2;
 }
 
 message EventData {
+  string id = 1;
+  string entity = 2;
+  EventType event_type = 3;
+  int32 version = 5;
+  string data = 6;
+  AuditData audit_data = 7;
+}
 
+message AuditData {
+  google.protobuf.Timestamp locally_created_at = 1;
+  google.protobuf.Timestamp locally_created_at_utc = 2;
+  google.protobuf.Timestamp locally_modified_at = 3;
+  google.protobuf.Timestamp locally_modified_at_utc = 4;
+  string time_zone = 5;
+}
+enum EventType {
+  UNKNOWN = 0;
+  INSERT = 1;
+  UPDATE = 2;
+  DELETE = 3;
+  SUMMARY = 4;
 }

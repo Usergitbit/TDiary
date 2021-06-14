@@ -15,19 +15,13 @@ namespace TDiary.Database.Configurations.Base
         {
             builder.HasKey(p => p.Id);
 
-            builder.Property(p => p.CreatedAt)
-                .ValueGeneratedOnAdd()
-                .IsRequired();
-
-            builder.Property(p => p.UpdatedAt)
-                .ValueGeneratedOnUpdate()
+            builder.Property(p => p.InsertedAt)
                 .IsRequired();
 
             builder.Property(p => p.LocallyCreatedAt)
                  .IsRequired();
 
-            builder.Property(p => p.LocallyUpdatedAt)
-                 .IsRequired();
+            builder.Property(p => p.LocallyModifiedAt);
 
             builder.Property(p => p.TimeZone)
                  .HasConversion(tz => tz.ToSerializedString(), s => TimeZoneInfo.FromSerializedString(s))

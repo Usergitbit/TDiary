@@ -6,9 +6,10 @@ namespace TDiary.Common.Models.Entities.Enums
 {
     public enum EventType
     {
-        Insert,
-        Update,
-        Delete,
-        Summary
+        Unknown = 0,
+        Insert = 1,
+        Update = 2,
+        Delete = 3,
+        Summary = 5
     }
 }

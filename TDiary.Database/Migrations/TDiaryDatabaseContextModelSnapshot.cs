@@ -25,17 +25,22 @@ namespace TDiary.Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone");
-
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("InsertedAt")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("LocallyCreatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("LocallyUpdatedAt")
+                    b.Property<DateTime>("LocallyCreatedAtUtc")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("LocallyModifiedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("LocallyModifiedAtUtc")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Name")
@@ -47,8 +52,7 @@ namespace TDiary.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnUpdate()
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid>("UserId")
@@ -71,10 +75,6 @@ namespace TDiary.Database.Migrations
                     b.Property<double>("Carbohydrates")
                         .HasColumnType("double precision");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone");
-
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
 
@@ -84,10 +84,19 @@ namespace TDiary.Database.Migrations
                     b.Property<Guid>("FoodItemId")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime>("InsertedAt")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<DateTime>("LocallyCreatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("LocallyUpdatedAt")
+                    b.Property<DateTime>("LocallyCreatedAtUtc")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("LocallyModifiedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("LocallyModifiedAtUtc")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid?>("PlateId")
@@ -106,8 +115,7 @@ namespace TDiary.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnUpdate()
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid>("UserId")
@@ -140,10 +148,6 @@ namespace TDiary.Database.Migrations
                     b.Property<bool>("BodyFatPercentageDefinedByUser")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone");
-
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
 
@@ -156,10 +160,19 @@ namespace TDiary.Database.Migrations
                     b.Property<double>("Height")
                         .HasColumnType("double precision");
 
+                    b.Property<DateTime>("InsertedAt")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<DateTime>("LocallyCreatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("LocallyUpdatedAt")
+                    b.Property<DateTime>("LocallyCreatedAtUtc")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("LocallyModifiedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("LocallyModifiedAtUtc")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Name")
@@ -188,8 +201,7 @@ namespace TDiary.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnUpdate()
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid>("UserId")
@@ -212,10 +224,6 @@ namespace TDiary.Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone");
-
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
 
@@ -230,18 +238,26 @@ namespace TDiary.Database.Migrations
                     b.Property<int>("EventType")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime>("InsertedAt")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<DateTime>("LocallyCreatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("LocallyUpdatedAt")
+                    b.Property<DateTime>("LocallyCreatedAtUtc")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("LocallyModifiedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("LocallyModifiedAtUtc")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("TimeZone")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnUpdate()
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid>("UserId")
@@ -271,20 +287,25 @@ namespace TDiary.Database.Migrations
                     b.Property<double>("Carbohydrates")
                         .HasColumnType("double precision");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone");
-
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
 
                     b.Property<double>("Fats")
                         .HasColumnType("double precision");
 
+                    b.Property<DateTime>("InsertedAt")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<DateTime>("LocallyCreatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("LocallyUpdatedAt")
+                    b.Property<DateTime>("LocallyCreatedAtUtc")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("LocallyModifiedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("LocallyModifiedAtUtc")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Name")
@@ -301,8 +322,7 @@ namespace TDiary.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnUpdate()
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid>("UserId")
@@ -321,17 +341,22 @@ namespace TDiary.Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp without time zone");
-
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("InsertedAt")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("LocallyCreatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("LocallyUpdatedAt")
+                    b.Property<DateTime>("LocallyCreatedAtUtc")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("LocallyModifiedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("LocallyModifiedAtUtc")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Name")
@@ -342,8 +367,7 @@ namespace TDiary.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnUpdate()
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid>("UserId")
