@@ -3,9 +3,11 @@ syntax = "proto3";
 option csharp_namespace = "TDiary.Api.Protos";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
 
 service EventProto {
   rpc AddEvent (AddEventRequest) returns (AddEventReply);
+  rpc GetEvents (GetEventsRequest) returns (GetEventsReply);
 }
 
 message AddEventRequest {
@@ -14,6 +16,15 @@ message AddEventRequest {
 
 message AddEventReply {
   string message = 1;
+}
+
+message GetEventsRequest {
+  google.protobuf.Timestamp last_event_date_utc = 1;
+}
+
+message GetEventsReply {
+  string message = 1;
+  repeated EventData event_data = 2;
 }
 
 message EventData {

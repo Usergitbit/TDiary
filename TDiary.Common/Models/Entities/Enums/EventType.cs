@@ -10,6 +10,6 @@ namespace TDiary.Common.Models.Entities.Enums
         Insert = 1,
         Update = 2,
         Delete = 3,
-        Summary = 5
+        Summary = 4
     }
 }

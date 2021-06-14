@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 using TDiary.Api.Protos;
 using TDiary.Api.Validators;
 using TDiary.Common.Models.Entities;
-using TDiary.Common.Models.Entities.Enums;
 using TDiary.Common.ServiceContracts;
-using TDiary.Database;
+using TDiary.Common.Extensions;
+using TDiary.Api.Extensions;
 
 namespace TDiary.Api.Grpc
 {
@@ -41,8 +41,7 @@ namespace TDiary.Api.Grpc
                         Message = "Invalid"
                     };
 
-                var userIdString = context.GetHttpContext().User.Claims.FirstOrDefault(c => c.Type == "id").Value;
-                var userId = Guid.Parse(userIdString);
+                var userId = context.GetUserId();
                 var eventEntity = mapper.Map<Event>(request.EventData);
                 await eventService.Add(userId, eventEntity);
 
@@ -55,6 +54,28 @@ namespace TDiary.Api.Grpc
             {
                 logger.LogError(ex, "Exception adding event.");
                 return new AddEventReply
+                {
+                    Message = "Error"
+                };
+            }
+        }
+
+        public override async Task<GetEventsReply> GetEvents(GetEventsRequest request, ServerCallContext context)
+        {
+            try
+            {
+
+                var userId = context.GetUserId();
+                var events = await eventService.Get(userId, request.LastEventDateUtc.ToDateTime());
+                var eventDataList = mapper.Map<List<EventData>>(events);
+                var response = new GetEventsReply("Success", eventDataList);
+
+                return response;
+            }
+            catch(Exception ex)
+            {
+                logger.LogError(ex, "Exception adding event.");
+                return new GetEventsReply
                 {
                     Message = "Error"
                 };

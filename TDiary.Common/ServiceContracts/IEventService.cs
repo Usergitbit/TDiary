@@ -9,5 +9,6 @@ namespace TDiary.Common.ServiceContracts
     public interface IEventService
     {
         Task Add(Guid userId, Event eventEntity);
+        Task<List<Event>> Get(Guid userId, DateTime lastEventDateUtc);
     }
 }

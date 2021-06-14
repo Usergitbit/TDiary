@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,6 +24,15 @@ namespace TDiary.Api.Services
             eventEntity.InsertedAt = DateTime.UtcNow;
             await tdiaryDatabaseContext.AddAsync(eventEntity);
             await tdiaryDatabaseContext.SaveChangesAsync();
+        }
+
+        public async Task<List<Event>> Get(Guid userId, DateTime lastEventDateUtc)
+        {
+            var events = await tdiaryDatabaseContext.Events
+                .Where(e => e.LocallyCreatedAtUtc > lastEventDateUtc && e.UserId == userId)
+                .ToListAsync();
+
+            return events;
         }
     }
 }
