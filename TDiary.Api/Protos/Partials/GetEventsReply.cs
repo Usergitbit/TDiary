@@ -7,10 +7,18 @@ namespace TDiary.Api.Protos
 {
     public partial class GetEventsReply
     {
-        public GetEventsReply(string message, IEnumerable<EventData> eventData) : base()
+        public GetEventsReply(IEnumerable<EventData> eventData) : base()
         {
-            Message = message;
             EventData.AddRange(eventData);
+            if (!eventData.Any())
+                Message = "No data.";
+            else
+                Message = "OK";
+        }
+
+        public GetEventsReply(ErrorInfo errorInfo)
+        {
+            ErrorInfo = errorInfo;
         }
     }
 }

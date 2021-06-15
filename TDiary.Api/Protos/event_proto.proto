@@ -15,7 +15,10 @@ message AddEventRequest {
 }
 
 message AddEventReply {
-  string message = 1;
+  oneof result {
+    ErrorInfo error_info = 1;
+	string message = 2;
+  }
 }
 
 message GetEventsRequest {
@@ -23,9 +26,19 @@ message GetEventsRequest {
 }
 
 message GetEventsReply {
-  string message = 1;
-  repeated EventData event_data = 2;
+  oneof result {
+    ErrorInfo error_info = 1;
+    string message = 2;
+  }
+  repeated EventData event_data = 3;
 }
+
+message ErrorInfo {
+  string reason = 1;
+  ErrorType errorType = 2;
+}
+
+
 
 message EventData {
   string id = 1;
@@ -49,4 +62,10 @@ enum EventType {
   UPDATE = 2;
   DELETE = 3;
   SUMMARY = 4;
+}
+
+enum ErrorType {
+  VALIDATION = 0;
+  INTERNAL = 1;
+  BAD_REQUEST = 2;
 }

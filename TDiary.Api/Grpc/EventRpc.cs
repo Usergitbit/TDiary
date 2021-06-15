@@ -12,6 +12,7 @@ using TDiary.Common.Models.Entities;
 using TDiary.Common.ServiceContracts;
 using TDiary.Common.Extensions;
 using TDiary.Api.Extensions;
+using TDiary.Api.Exceptions;
 
 namespace TDiary.Api.Grpc
 {
@@ -35,28 +36,29 @@ namespace TDiary.Api.Grpc
         {
             try
             {
-                if(!eventValidator.IsValid(request.EventData))
-                    return new AddEventReply
-                    {
-                        Message = "Invalid"
-                    };
+                if (!eventValidator.IsValid(request.EventData, out var propertyValidationFailiures))
+                {
+                    var error = new ErrorInfo(propertyValidationFailiures);
+                    return new AddEventReply(error);
+                }
 
                 var userId = context.GetUserId();
                 var eventEntity = mapper.Map<Event>(request.EventData);
                 await eventService.Add(userId, eventEntity);
 
-                return new AddEventReply
-                {
-                    Message = "Success"
-                };
+                return new AddEventReply("OK");
             }
-            catch(Exception ex)
+            catch (DuplicateIdException ex)
+            {
+                logger.LogError(ex, "Dupliate id exception adding event.");
+                var error = new ErrorInfo(ex);
+                return new AddEventReply(error);
+            }
+            catch (Exception ex)
             {
                 logger.LogError(ex, "Exception adding event.");
-                return new AddEventReply
-                {
-                    Message = "Error"
-                };
+                var error = new ErrorInfo(ex);
+                return new AddEventReply(error);
             }
         }
 
@@ -64,21 +66,18 @@ namespace TDiary.Api.Grpc
         {
             try
             {
-
                 var userId = context.GetUserId();
                 var events = await eventService.Get(userId, request.LastEventDateUtc.ToDateTime());
                 var eventDataList = mapper.Map<List<EventData>>(events);
-                var response = new GetEventsReply("Success", eventDataList);
+                var response = new GetEventsReply(eventDataList);
 
                 return response;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.LogError(ex, "Exception adding event.");
-                return new GetEventsReply
-                {
-                    Message = "Error"
-                };
+                var error = new ErrorInfo(ex);
+                return new GetEventsReply(error);
             }
         }
     }

@@ -8,22 +8,36 @@ namespace TDiary.Api.Validators
 {
     public class EventValidator
     {
-        public bool IsValid(EventData eventData)
+        public bool IsValid(EventData eventData, out IReadOnlyDictionary<string, IEnumerable<string>> propertyValidationFailures)
         {
             var result = true;
+            var propertyValidationFailuresInternal = new Dictionary<string, IEnumerable<string>>();
 
-            if (!Guid.TryParse(eventData.Id, out var id) || id == Guid.Empty)
-                return false;
+            var idValidationMessages = new List<string>();
+            if (!Guid.TryParse(eventData.Id, out var id))
+                idValidationMessages.Add("Could not parse string into Guid.");
+            if(id == Guid.Empty)
+                idValidationMessages.Add("Id can not be empty.");
+            if (idValidationMessages.Any())
+                propertyValidationFailuresInternal.Add(nameof(EventData.Id), idValidationMessages);
+
             if (eventData.AuditData == null)
-                return false;
+                propertyValidationFailuresInternal.Add(nameof(EventData.AuditData), new List<string> { "AuditData can not be empty." });
+
             if (string.IsNullOrWhiteSpace(eventData.AuditData.TimeZone))
-                return false;
+                propertyValidationFailuresInternal.Add(nameof(EventData.AuditData.TimeZone), new List<string> { "AuditData Timezone can not be empty." });
+
             if (string.IsNullOrWhiteSpace(eventData.Data))
-                return false;
+                propertyValidationFailuresInternal.Add(nameof(EventData.Data), new List<string> { "Data can not be empty." });
+
             if (string.IsNullOrWhiteSpace(eventData.Entity))
-                return false;
+                propertyValidationFailuresInternal.Add(nameof(EventData.Entity), new List<string> { "Entity can not be empty." });
+
             if (eventData.EventType == EventType.Unknown)
-                return false;
+                propertyValidationFailuresInternal.Add(nameof(EventData.EventType), new List<string> { "EventType can not be Unknown." });
+
+            propertyValidationFailures = propertyValidationFailuresInternal;
+            result = !propertyValidationFailures.Any();
 
             return result;
         }

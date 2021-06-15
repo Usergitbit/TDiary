@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TDiary.Api.Exceptions;
 using TDiary.Common.Models.Entities;
 using TDiary.Common.ServiceContracts;
 using TDiary.Database;
@@ -20,6 +21,13 @@ namespace TDiary.Api.Services
         public async Task Add(Guid userId, Event eventEntity)
         {
             eventEntity.UserId = userId;
+            var existingEvent = await tdiaryDatabaseContext.Events
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.Id == eventEntity.Id);
+
+            if (existingEvent != null)
+                throw new DuplicateIdException(eventEntity.Id, nameof(Event));
+
             await tdiaryDatabaseContext.AddAsync(eventEntity);
             await tdiaryDatabaseContext.SaveChangesAsync();
         }
