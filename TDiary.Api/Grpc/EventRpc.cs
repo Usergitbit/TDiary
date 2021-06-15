@@ -36,9 +36,9 @@ namespace TDiary.Api.Grpc
         {
             try
             {
-                if (!eventValidator.IsValid(request.EventData, out var propertyValidationFailiures))
+                if (!eventValidator.IsValid(request.EventData, out var propertyValidationFailures))
                 {
-                    var error = new ErrorInfo(propertyValidationFailiures);
+                    var error = new ErrorInfo(propertyValidationFailures);
 
                     return new AddEventReply(error);
                 }
