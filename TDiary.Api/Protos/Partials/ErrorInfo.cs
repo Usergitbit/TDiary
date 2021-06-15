@@ -27,7 +27,7 @@ namespace TDiary.Api.Protos
             var stringBuilder = new StringBuilder();
             foreach(var key in propertyValidationFailures)
             {
-                stringBuilder.AppendLine($"Property {key.Key} invalid. Reasons:");
+                stringBuilder.AppendLine($"Property {key.Key} is invalid. Reasons:");
                 foreach (var failure in propertyValidationFailures[key.Key])
                     stringBuilder.AppendLine($"\t{failure}");
             }
