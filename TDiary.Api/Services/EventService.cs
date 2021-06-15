@@ -36,6 +36,7 @@ namespace TDiary.Api.Services
         {
             var events = await tdiaryDatabaseContext.Events
                 .Where(e => e.CreatedAtUtc > lastEventDateUtc && e.UserId == userId)
+                .OrderBy(e => e.CreatedAtUtc)
                 .ToListAsync();
 
             return events;
