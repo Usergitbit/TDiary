@@ -39,6 +39,7 @@ namespace TDiary.Api.Grpc
                 if (!eventValidator.IsValid(request.EventData, out var propertyValidationFailiures))
                 {
                     var error = new ErrorInfo(propertyValidationFailiures);
+
                     return new AddEventReply(error);
                 }
 
@@ -52,12 +53,14 @@ namespace TDiary.Api.Grpc
             {
                 logger.LogError(ex, "Dupliate id exception adding event.");
                 var error = new ErrorInfo(ex);
+
                 return new AddEventReply(error);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Exception adding event.");
                 var error = new ErrorInfo(ex);
+
                 return new AddEventReply(error);
             }
         }
@@ -77,6 +80,7 @@ namespace TDiary.Api.Grpc
             {
                 logger.LogError(ex, "Exception adding event.");
                 var error = new ErrorInfo(ex);
+
                 return new GetEventsReply(error);
             }
         }
