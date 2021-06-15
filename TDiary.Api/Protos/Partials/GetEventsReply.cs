@@ -11,9 +11,9 @@ namespace TDiary.Api.Protos
         {
             EventData.AddRange(eventData);
             if (!eventData.Any())
-                Message = "No data.";
+                ResultCode = ResultCode.NoData;
             else
-                Message = "OK";
+                ResultCode = ResultCode.Ok;
         }
 
         public GetEventsReply(ErrorInfo errorInfo)

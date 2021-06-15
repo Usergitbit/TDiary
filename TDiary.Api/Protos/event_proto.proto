@@ -17,7 +17,7 @@ message AddEventRequest {
 message AddEventReply {
   oneof result {
     ErrorInfo error_info = 1;
-	string message = 2;
+	ResultCode result_code = 2;
   }
 }
 
@@ -28,7 +28,7 @@ message GetEventsRequest {
 message GetEventsReply {
   oneof result {
     ErrorInfo error_info = 1;
-    string message = 2;
+    ResultCode result_code = 2;
   }
   repeated EventData event_data = 3;
 }
@@ -68,4 +68,10 @@ enum ErrorType {
   VALIDATION = 0;
   INTERNAL = 1;
   BAD_REQUEST = 2;
+}
+
+enum ResultCode {
+  UNKNOWN_RESULT = 0;
+  OK = 1;
+  NO_DATA = 2;
 }

@@ -8,13 +8,19 @@ namespace TDiary.Api.Protos
 {
     public partial class AddEventReply
     {
-        public AddEventReply(string message) : base()
+        public AddEventReply(ResultCode resultCode) : base()
         {
-            Message = message;
+            ResultCode = resultCode;
         }
+
         public AddEventReply(ErrorInfo errorInfo) : base()
         {
             ErrorInfo = errorInfo;
+        }
+
+        partial void OnConstruction()
+        {
+            ResultCode = ResultCode.Ok;
         }
     }
 }

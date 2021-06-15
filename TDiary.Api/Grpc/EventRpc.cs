@@ -46,7 +46,7 @@ namespace TDiary.Api.Grpc
                 var eventEntity = mapper.Map<Event>(request.EventData);
                 await eventService.Add(userId, eventEntity);
 
-                return new AddEventReply("OK");
+                return new AddEventReply();
             }
             catch (DuplicateIdException ex)
             {

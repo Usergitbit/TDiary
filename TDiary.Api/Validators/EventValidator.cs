@@ -10,7 +10,6 @@ namespace TDiary.Api.Validators
     {
         public bool IsValid(EventData eventData, out IReadOnlyDictionary<string, IEnumerable<string>> propertyValidationFailures)
         {
-            var result = true;
             var propertyValidationFailuresInternal = new Dictionary<string, IEnumerable<string>>();
 
             var idValidationMessages = new List<string>();
@@ -24,8 +23,8 @@ namespace TDiary.Api.Validators
             if (eventData.AuditData == null)
                 propertyValidationFailuresInternal.Add(nameof(EventData.AuditData), new List<string> { "AuditData can not be empty." });
 
-            if (string.IsNullOrWhiteSpace(eventData.AuditData.TimeZone))
-                propertyValidationFailuresInternal.Add(nameof(EventData.AuditData.TimeZone), new List<string> { "AuditData Timezone can not be empty." });
+            if (string.IsNullOrWhiteSpace(eventData.AuditData?.TimeZone))
+                propertyValidationFailuresInternal.Add(nameof(AuditData.TimeZone), new List<string> { "AuditData Timezone can not be empty." });
 
             if (string.IsNullOrWhiteSpace(eventData.Data))
                 propertyValidationFailuresInternal.Add(nameof(EventData.Data), new List<string> { "Data can not be empty." });
@@ -37,7 +36,7 @@ namespace TDiary.Api.Validators
                 propertyValidationFailuresInternal.Add(nameof(EventData.EventType), new List<string> { "EventType can not be Unknown." });
 
             propertyValidationFailures = propertyValidationFailuresInternal;
-            result = !propertyValidationFailures.Any();
+            var result = !propertyValidationFailures.Any();
 
             return result;
         }
