@@ -15,22 +15,17 @@ namespace TDiary.Database.Configurations.Base
         {
             builder.HasKey(p => p.Id);
 
-            builder.Property(p => p.InsertedAt)
-                .IsRequired();
-
-            builder.Property(p => p.LocallyCreatedAt)
+            builder.Property(p => p.CreatedAt)
                  .IsRequired();
 
-            builder.Property(p => p.LocallyModifiedAt);
+            builder.Property(p => p.CreatedAtUtc)
+                 .IsRequired();
 
             builder.Property(p => p.TimeZone)
                  .HasConversion(tz => tz.ToSerializedString(), s => TimeZoneInfo.FromSerializedString(s))
                  .IsRequired();
 
             builder.Property(p => p.UserId)
-                .IsRequired();
-
-            builder.Property(p => p.CreatedBy)
                 .IsRequired();
         }
     }

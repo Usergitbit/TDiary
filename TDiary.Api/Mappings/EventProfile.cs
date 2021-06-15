@@ -14,12 +14,11 @@ namespace TDiary.Api.Mappings
     {
         public EventProfile()
         {
-
             CreateMap<Event, AuditData>()
-                .ForMember(ad => ad.LocallyCreatedAt, o => o.MapFrom(e => Timestamp.FromDateTime(e.LocallyCreatedAt.AsUtc())))
-                .ForMember(ad => ad.LocallyCreatedAtUtc, o => o.MapFrom(e => Timestamp.FromDateTime(e.LocallyCreatedAtUtc.AsUtc())))
-                .ForMember(ad => ad.LocallyModifiedAt, o => o.MapFrom(e => Timestamp.FromDateTime(e.LocallyModifiedAt.AsUtcNullMinimum())))
-                .ForMember(ad => ad.LocallyModifiedAtUtc, o => o.MapFrom(e => Timestamp.FromDateTime(e.LocallyModifiedAtUtc.AsUtcNullMinimum())))
+                .ForMember(ad => ad.CreatedAt, o => o.MapFrom(e => Timestamp.FromDateTime(e.CreatedAt.AsUtc())))
+                .ForMember(ad => ad.CreatedAtUtc, o => o.MapFrom(e => Timestamp.FromDateTime(e.CreatedAtUtc.AsUtc())))
+                .ForMember(ad => ad.ModifiedAt, o => o.MapFrom(e => Timestamp.FromDateTime(e.ModifiedtAt.AsUtcNullMinimum())))
+                .ForMember(ad => ad.ModifiedAtUtc, o => o.MapFrom(e => Timestamp.FromDateTime(e.ModifiedAtUtc.AsUtcNullMinimum())))
                 .ForMember(ad => ad.TimeZone, o => o.MapFrom(e => e.TimeZone.ToSerializedString()))
                 .ForAllOtherMembers(ad => ad.Ignore());
 
@@ -28,10 +27,10 @@ namespace TDiary.Api.Mappings
                 .ForMember(e => e.Entity, o => o.MapFrom(ed => ed.Entity))
                 .ForMember(e => e.EventType, o => o.MapFrom(ed => ed.EventType))
                 .ForMember(e => e.Version, o => o.MapFrom(ed => ed.Version))
-                .ForMember(e => e.LocallyCreatedAt, o => o.MapFrom(ed => ed.AuditData.LocallyCreatedAt.ToDateTime()))
-                .ForMember(e => e.LocallyCreatedAtUtc, o => o.MapFrom(ed => ed.AuditData.LocallyCreatedAtUtc.ToDateTime()))
-                .ForMember(e => e.LocallyModifiedAt, o => o.MapFrom(ed => ed.AuditData.LocallyModifiedAt.ToDateTime()))
-                .ForMember(e => e.LocallyModifiedAtUtc, o => o.MapFrom(ed => ed.AuditData.LocallyModifiedAtUtc.ToDateTime()))
+                .ForMember(e => e.CreatedAt, o => o.MapFrom(ed => ed.AuditData.CreatedAt.ToDateTime()))
+                .ForMember(e => e.CreatedAtUtc, o => o.MapFrom(ed => ed.AuditData.CreatedAtUtc.ToDateTime()))
+                .ForMember(e => e.ModifiedtAt, o => o.MapFrom(ed => ed.AuditData.ModifiedAt.ToNullMinimumDateTime()))
+                .ForMember(e => e.ModifiedAtUtc, o => o.MapFrom(ed => ed.AuditData.ModifiedAtUtc.ToNullMinimumDateTime()))
                 .ForMember(e => e.TimeZone, o => o.MapFrom(ed => TimeZoneInfo.FromSerializedString(ed.AuditData.TimeZone)))
                 .ReverseMap()
                 .ForMember(ed => ed.Id, o => o.MapFrom(e => e.Id))

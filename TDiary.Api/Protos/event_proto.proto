@@ -37,10 +37,10 @@ message EventData {
 }
 
 message AuditData {
-  google.protobuf.Timestamp locally_created_at = 1;
-  google.protobuf.Timestamp locally_created_at_utc = 2;
-  google.protobuf.Timestamp locally_modified_at = 3;
-  google.protobuf.Timestamp locally_modified_at_utc = 4;
+  google.protobuf.Timestamp created_at = 1;
+  google.protobuf.Timestamp created_at_utc = 2;
+  google.protobuf.Timestamp modified_at = 3;
+  google.protobuf.Timestamp modified_at_utc = 4;
   string time_zone = 5;
 }
 enum EventType {

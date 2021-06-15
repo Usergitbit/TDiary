@@ -27,5 +27,7 @@ namespace TDiary.Common.Extensions
 
             return new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour, dateTime.Minute, dateTime.Second, DateTimeKind.Utc);
         }
+
+
     }
 }

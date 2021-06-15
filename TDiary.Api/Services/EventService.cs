@@ -20,8 +20,6 @@ namespace TDiary.Api.Services
         public async Task Add(Guid userId, Event eventEntity)
         {
             eventEntity.UserId = userId;
-            eventEntity.CreatedBy = userId;
-            eventEntity.InsertedAt = DateTime.UtcNow;
             await tdiaryDatabaseContext.AddAsync(eventEntity);
             await tdiaryDatabaseContext.SaveChangesAsync();
         }
@@ -29,7 +27,7 @@ namespace TDiary.Api.Services
         public async Task<List<Event>> Get(Guid userId, DateTime lastEventDateUtc)
         {
             var events = await tdiaryDatabaseContext.Events
-                .Where(e => e.LocallyCreatedAtUtc > lastEventDateUtc && e.UserId == userId)
+                .Where(e => e.CreatedAtUtc > lastEventDateUtc && e.UserId == userId)
                 .ToListAsync();
 
             return events;

@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	<Protobuf Include="Protos\eventProto.proto" />
+	<Protobuf Include="Protos\event_proto.proto" />
   </ItemGroup>
 
 </Project>
