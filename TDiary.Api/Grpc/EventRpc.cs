@@ -6,13 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TDiary.Api.Protos;
 using TDiary.Api.Validators;
 using TDiary.Common.Models.Entities;
 using TDiary.Common.ServiceContracts;
 using TDiary.Common.Extensions;
 using TDiary.Api.Extensions;
-using TDiary.Api.Exceptions;
+using TDiary.Common.Exceptions;
+using TDiary.Grpc.Protos;
 
 namespace TDiary.Api.Grpc
 {

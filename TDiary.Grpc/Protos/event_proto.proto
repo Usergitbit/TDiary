@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option csharp_namespace = "TDiary.Api.Protos";
+option csharp_namespace = "TDiary.Grpc.Protos";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
@@ -11,7 +11,7 @@ service EventProto {
 }
 
 message AddEventRequest {
-  EventData event_data = 2;
+  EventData event_data = 1;
 }
 
 message AddEventReply {

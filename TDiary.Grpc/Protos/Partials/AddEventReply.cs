@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TDiary.Api.Exceptions;
 
-namespace TDiary.Api.Protos
+namespace TDiary.Grpc.Protos
 {
     public partial class AddEventReply
     {

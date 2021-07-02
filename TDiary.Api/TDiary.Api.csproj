@@ -9,7 +9,7 @@
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.38.0" />
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.38.0" />
-    <PackageReference Include="Grpc.Tools" Version="2.38.0">
+    <PackageReference Include="Grpc.Tools" Version="2.38.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -30,15 +30,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TDiary.Database\TDiary.Database.csproj" />
+    <ProjectReference Include="..\TDiary.Grpc\TDiary.Grpc.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="CLI\" />
     <Folder Include="Postman\" />
-  </ItemGroup>
-
-  <ItemGroup>
-	<Protobuf Include="Protos\event_proto.proto" />
   </ItemGroup>
 
 </Project>

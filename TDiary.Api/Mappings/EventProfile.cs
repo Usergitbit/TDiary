@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TDiary.Api.Protos;
 using TDiary.Common.Models.Entities;
 using TDiary.Common.Extensions;
+using TDiary.Grpc.Protos;
 
 namespace TDiary.Api.Mappings
 {

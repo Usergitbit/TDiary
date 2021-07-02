@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TDiary.Api.Exceptions;
+using TDiary.Common.Exceptions;
 using TDiary.Common.Models.Entities;
 using TDiary.Common.ServiceContracts;
 using TDiary.Database;

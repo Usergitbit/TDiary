@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TDiary.Api.Protos;
+using TDiary.Grpc.Protos;
 
 namespace TDiary.Api.Validators
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace TDiary.Api.Exceptions
+namespace TDiary.Common.Exceptions
 {
     public class DuplicateIdException : Exception
     {
