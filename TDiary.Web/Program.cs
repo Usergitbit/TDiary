@@ -8,6 +8,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+using TDiary.Grpc.Protos;
+using TDiary.Automapper;
+using TDiary.Web.Services;
+using Grpc.Core.Interceptors;
+using Grpc.Core;
 
 namespace TDiary.Web
 {
@@ -17,8 +22,6 @@ namespace TDiary.Web
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
-
-            //builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
             // We register a named HttpClient here for the API
             builder.Services.AddHttpClient("api")
@@ -36,7 +39,21 @@ namespace TDiary.Web
                 builder.Configuration.Bind("oidc", options.ProviderOptions);
             });
 
+            builder.Services.AddAutoMapper(typeof(EventProfile).Assembly);
+
+            builder.Services.AddGrpcClient<EventProto.EventProtoClient>(o =>
+            {
+                o.Address = new Uri("https://localhost:5002");
+            }).ConfigurePrimaryHttpMessageHandler((services) =>
+            {
+                var handler = services.GetService<AuthorizationMessageHandler>()
+                  .ConfigureHandler(new[] { "https://localhost:5002" }, new[] { "tdiaryapi.full" });
+                handler.InnerHandler = new HttpClientHandler();
+                return handler;
+            });
+            builder.Services.AddScoped<EventService>();
             await builder.Build().RunAsync();
+
         }
     }
 }

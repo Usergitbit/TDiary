@@ -8,7 +8,7 @@ using TDiary.Common.Models.Entities;
 using TDiary.Common.Extensions;
 using TDiary.Grpc.Protos;
 
-namespace TDiary.Api.Mappings
+namespace TDiary.Automapper
 {
     public class EventProfile : Profile
     {

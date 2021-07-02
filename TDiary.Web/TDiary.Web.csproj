@@ -5,12 +5,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="5.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.2" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="5.0.2" />
+    <PackageReference Include="AutoMapper" Version="10.1.1" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
+    <PackageReference Include="Grpc.Net.Client.Web" Version="2.38.0" />
+    <PackageReference Include="Grpc.Net.ClientFactory" Version="2.38.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="5.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.7" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="5.0.7" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
     <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TDiary.Automapper\TDiary.Automapper.csproj" />
+    <ProjectReference Include="..\TDiary.Common\TDiary.Common.csproj" />
+    <ProjectReference Include="..\TDiary.Grpc\TDiary.Grpc.csproj" />
   </ItemGroup>
 
 </Project>

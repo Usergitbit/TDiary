@@ -21,6 +21,13 @@ namespace TDiary.Api
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                    webBuilder.UseKestrel((context, options) =>
+                    {
+                        options.ListenLocalhost(5002, listenOptions=> 
+                        {
+                            listenOptions.UseHttps();
+                        });
+                    });
                 });
     }
 }

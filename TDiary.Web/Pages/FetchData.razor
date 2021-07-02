@@ -1,6 +1,6 @@
 ﻿@page "/fetchdata"
 @attribute [Authorize]
-@inject HttpClient Http
+@inject EventService eventService
 
 <h1>Weather forecast</h1>
 
@@ -15,20 +15,20 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
+                <th>Entity</th>
+                <th>Type</th>
+                <th>Data</th>
+                <th>Created at (UTC)</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var forecast in forecasts)
+            @foreach (var applicationEvent in forecasts)
             {
                 <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
+                    <td>@applicationEvent.Entity</td>
+                    <td>@applicationEvent.EventType.ToString()</td>
+                    <td>@applicationEvent.Data</td>
+                    <td>@applicationEvent.CreatedAtUtc.ToString()</td>
                 </tr>
             }
         </tbody>
@@ -36,11 +36,12 @@ else
 }
 
 @code {
-    private WeatherForecast[] forecasts;
+    private List<Event> forecasts;
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("https://localhost:5002/WeatherForecast");
+
+        forecasts = await eventService.Get(Guid.Empty, DateTime.MinValue);
     }
 
     public class WeatherForecast

@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using TDiary.Api.Grpc;
 using TDiary.Api.Services;
 using TDiary.Api.Validators;
+using TDiary.Automapper;
 using TDiary.Common.ServiceContracts;
 using TDiary.Database;
 
@@ -47,17 +48,18 @@ namespace TDiary.Api
 
             services.AddSingleton<EventValidator>();
 
-            services.AddAutoMapper(GetType().Assembly);
+            services.AddAutoMapper(typeof(EventProfile).Assembly);
 
             services.AddCors(options =>
             {
                 options.AddPolicy("TDiary",
                                   builder =>
                                   {
-                                      builder.WithOrigins("https://localhost:5005")
+                                      builder.AllowAnyOrigin() //"https://localhost:5005"
                                         .AllowAnyMethod()
                                         .AllowAnyHeader()
-                                        .AllowCredentials();
+                                        //.AllowCredentials()
+                                        .WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding", "Grpc-Accept-Encoding");
                                   });
             });
 
@@ -111,9 +113,13 @@ namespace TDiary.Api
             var context = serviceProvider.GetRequiredService<TDiaryDatabaseContext>();
             context?.Database.Migrate();
 
+            app.UseHsts();
+
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseGrpcWeb(new GrpcWebOptions { DefaultEnabled = true });
 
             app.UseAuthentication();
 
@@ -122,7 +128,7 @@ namespace TDiary.Api
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapGrpcService<EventRpc>();
+                endpoints.MapGrpcService<EventRpc>().EnableGrpcWeb();
                 if (env.IsDevelopment())
                 {
                     endpoints.MapGrpcReflectionService();
