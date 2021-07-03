@@ -55,10 +55,10 @@ namespace TDiary.Api
                 options.AddPolicy("TDiary",
                                   builder =>
                                   {
-                                      builder.AllowAnyOrigin() //"https://localhost:5005"
+                                      builder.WithOrigins("https://localhost:5005")
                                         .AllowAnyMethod()
                                         .AllowAnyHeader()
-                                        //.AllowCredentials()
+                                        .AllowCredentials()
                                         .WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding", "Grpc-Accept-Encoding");
                                   });
             });
@@ -101,13 +101,18 @@ namespace TDiary.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
-            app.UseCors("TDiary");
 
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TDiary.Api v1"));
+            }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
             }
 
             var context = serviceProvider.GetRequiredService<TDiaryDatabaseContext>();
@@ -121,6 +126,8 @@ namespace TDiary.Api
 
             app.UseGrpcWeb(new GrpcWebOptions { DefaultEnabled = true });
 
+            app.UseCors("TDiary");
+
             app.UseAuthentication();
 
             app.UseAuthorization();
@@ -128,7 +135,7 @@ namespace TDiary.Api
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapGrpcService<EventRpc>().EnableGrpcWeb();
+                endpoints.MapGrpcService<EventRpc>().EnableGrpcWeb().RequireCors("TDiary");
                 if (env.IsDevelopment())
                 {
                     endpoints.MapGrpcReflectionService();

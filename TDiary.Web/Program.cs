@@ -13,6 +13,7 @@ using TDiary.Automapper;
 using TDiary.Web.Services;
 using Grpc.Core.Interceptors;
 using Grpc.Core;
+using Grpc.Net.Client.Web;
 
 namespace TDiary.Web
 {
@@ -49,7 +50,7 @@ namespace TDiary.Web
                 var handler = services.GetService<AuthorizationMessageHandler>()
                   .ConfigureHandler(new[] { "https://localhost:5002" }, new[] { "tdiaryapi.full" });
                 handler.InnerHandler = new HttpClientHandler();
-                return handler;
+                return new GrpcWebHandler(GrpcWebMode.GrpcWeb, handler);
             });
             builder.Services.AddScoped<EventService>();
             await builder.Build().RunAsync();
