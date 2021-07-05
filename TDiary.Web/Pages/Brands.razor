@@ -1,0 +1,41 @@
+﻿@page "/brands"
+@attribute [Authorize]
+@inject IBrandService BrandService
+@inject AuthenticationStateProvider authenticationStateProvider;
+
+<h3>Brands</h3>
+<EditForm Model="Brand">
+    <InputText @bind-Value="Brand.Name" />
+</EditForm>
+
+<button @onclick="Add">Add</button>
+<button @onclick="Get">Get</button>
+
+@foreach (var brand in BrandsList)
+{
+    <div>@brand.Name</div>
+}
+
+@code {
+    public Brand Brand { get; set; } = new();
+    public List<Brand> BrandsList { get; set; } = new List<Brand>();
+
+    public async Task Add()
+    {
+        await BrandService.Add(Brand);
+        Brand = new();
+    }
+
+    public async Task Get()
+    {
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var claims = user.Claims;
+        var userIdClaim = claims.FirstOrDefault(c => c.Type == "id").Value;
+        var userId = Guid.Parse(userIdClaim);
+
+        var result = await BrandService.Get(userId);
+        BrandsList = new List<Brand>(result);
+    }
+
+}

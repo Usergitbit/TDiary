@@ -14,6 +14,12 @@ using TDiary.Web.Services;
 using Grpc.Core.Interceptors;
 using Grpc.Core;
 using Grpc.Net.Client.Web;
+using Blazored.LocalStorage;
+using TG.Blazor.IndexedDB;
+using TDiary.Common.ServiceContracts;
+using TDiary.Web.IndexedDB.SchemaBuilder;
+using TDiary.Common.Models.Entities;
+using TDiary.Web.IndexedDB;
 
 namespace TDiary.Web
 {
@@ -34,11 +40,14 @@ namespace TDiary.Web
                 });
 
             builder.Services.AddScoped(sp => sp.GetService<IHttpClientFactory>().CreateClient("api"));
+            builder.Services.AddScoped<LocalUserStore>();
+
+            builder.Services.AddBlazoredLocalStorage();
 
             builder.Services.AddOidcAuthentication(options =>
             {
                 builder.Configuration.Bind("oidc", options.ProviderOptions);
-            });
+            }).AddAccountClaimsPrincipalFactory<OfflineAccountClaimsPrincipalFactory>();
 
             builder.Services.AddAutoMapper(typeof(EventProfile).Assembly);
 
@@ -53,6 +62,32 @@ namespace TDiary.Web
                 return new GrpcWebHandler(GrpcWebMode.GrpcWeb, handler);
             });
             builder.Services.AddScoped<EventService>();
+            builder.Services.AddScoped<IBrandService, BrandService>();
+
+
+            builder.Services.AddIndexedDB(dbStore =>
+            {
+                dbStore.DbName = "TDiary"; 
+                dbStore.Version = 1;
+
+                var eventsSchema = new SchemaBuilder<Event>()
+                    .StoreName(StoreNameConstants.Events)
+                    .BaseProperties()
+                    .Property("entity")
+                    .Property("eventType")
+                    .Property("version")
+                    .Property("data")
+                    .Build();
+
+                var brandsSchema = new SchemaBuilder<Brand>()
+                    .StoreName(StoreNameConstants.Brands)
+                    .BaseProperties()
+                    .Property("name")
+                    .Build();
+
+                dbStore.Stores.AddRange(new[] { eventsSchema, brandsSchema });
+            });
+
             await builder.Build().RunAsync();
 
         }
