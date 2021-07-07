@@ -19,7 +19,13 @@ namespace TDiary.Automapper
                 .ForMember(ad => ad.CreatedAtUtc, o => o.MapFrom(e => Timestamp.FromDateTime(e.CreatedAtUtc.AsUtc())))
                 .ForMember(ad => ad.ModifiedAt, o => o.MapFrom(e => Timestamp.FromDateTime(e.ModifiedtAt.AsUtcNullMinimum())))
                 .ForMember(ad => ad.ModifiedAtUtc, o => o.MapFrom(e => Timestamp.FromDateTime(e.ModifiedAtUtc.AsUtcNullMinimum())))
-                .ForMember(ad => ad.TimeZone, o => o.MapFrom(e => e.TimeZone.ToSerializedString()))
+                .ForMember(ad => ad.TimeZone, o => o.MapFrom(e => e.TimeZone))
+                .ReverseMap()
+                .ForMember(ad => ad.CreatedAt, o => o.MapFrom(e => e.CreatedAt.ToDateTime()))
+                .ForMember(ad => ad.CreatedAtUtc, o => o.MapFrom(e => e.CreatedAtUtc.ToDateTime()))
+                .ForMember(ad => ad.ModifiedtAt, o => o.MapFrom(e => e.ModifiedAt.ToDateTime()))
+                .ForMember(ad => ad.ModifiedAtUtc, o => o.MapFrom(e => e.ModifiedAtUtc.ToDateTime()))
+                .ForMember(ad => ad.TimeZone, o => o.MapFrom(e => e.TimeZone))
                 .ForAllOtherMembers(ad => ad.Ignore());
 
             CreateMap<EventData, Event>()
@@ -31,13 +37,14 @@ namespace TDiary.Automapper
                 .ForMember(e => e.CreatedAtUtc, o => o.MapFrom(ed => ed.AuditData.CreatedAtUtc.ToDateTime()))
                 .ForMember(e => e.ModifiedtAt, o => o.MapFrom(ed => ed.AuditData.ModifiedAt.ToNullMinimumDateTime()))
                 .ForMember(e => e.ModifiedAtUtc, o => o.MapFrom(ed => ed.AuditData.ModifiedAtUtc.ToNullMinimumDateTime()))
-                .ForMember(e => e.TimeZone, o => o.MapFrom(ed => TimeZoneInfo.FromSerializedString(ed.AuditData.TimeZone)))
+                .ForMember(e => e.TimeZone, o => o.MapFrom(ed => ed.AuditData.TimeZone))
                 .ReverseMap()
                 .ForMember(ed => ed.Id, o => o.MapFrom(e => e.Id))
                 .ForMember(ed => ed.Entity, o => o.MapFrom(e => e.Entity))
                 .ForMember(ed => ed.EventType, o => o.MapFrom(e => e.EventType))
                 .ForMember(ed => ed.Version, o => o.MapFrom(e => e.Version))
                 .ForMember(ed => ed.AuditData, o => o.MapFrom(e => e))
+                .ForMember(ed => ed.Data, o => o.MapFrom(e => e.Data))
                 .ForAllOtherMembers(ad => ad.Ignore());
         }
     }

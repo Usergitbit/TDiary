@@ -11,7 +11,7 @@ namespace TDiary.Common.Models.Base
         public DateTime CreatedAtUtc { get; set; }
         public DateTime? ModifiedtAt { get; set; }
         public DateTime? ModifiedAtUtc { get; set; }
-        public TimeZoneInfo TimeZone { get; set; }
+        public string TimeZone { get; set; }
         public Guid UserId { get; set; }
     }
 }

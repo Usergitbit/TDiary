@@ -1,7 +1,10 @@
 ﻿@page "/brands"
 @attribute [Authorize]
+@inject IEventService EventService
 @inject IBrandService BrandService
-@inject AuthenticationStateProvider authenticationStateProvider;
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject NetworkStateService NetworkStateService
+@inject ISynchronizationService SynchronizationService
 
 <h3>Brands</h3>
 <EditForm Model="Brand">
@@ -20,13 +23,46 @@
     public Brand Brand { get; set; } = new();
     public List<Brand> BrandsList { get; set; } = new List<Brand>();
 
+    protected override async Task OnInitializedAsync()
+    {
+        var isOnline = await NetworkStateService.IsOnline();
+        if (isOnline)
+        {
+            await SynchronizationService.Synchronize();
+        }
+        await Get();
+    }
+
     public async Task Add()
     {
-        await BrandService.Add(Brand);
+        var userId = await GetUserId();
+        Brand.UserId = userId;
+        var addBrandEvent = new Event
+        {
+            CreatedAt = DateTime.Now,
+            CreatedAtUtc = DateTime.UtcNow,
+            Data = JsonSerializer.Serialize(Brand),
+            Entity = "Brand",
+            EventType = EventType.Insert,
+            Id = Guid.NewGuid(),
+            TimeZone = TimeZoneInfo.Local.Id,
+            UserId = userId,
+            Version = 1
+        };
+        await EventService.Add(userId, addBrandEvent);
         Brand = new();
+        await Get();
     }
 
     public async Task Get()
+    {
+
+        var userId = await GetUserId();
+        var result = await BrandService.Get(userId);
+        BrandsList = new List<Brand>(result);
+    }
+
+    private async Task<Guid> GetUserId()
     {
         var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
@@ -34,8 +70,7 @@
         var userIdClaim = claims.FirstOrDefault(c => c.Type == "id").Value;
         var userId = Guid.Parse(userIdClaim);
 
-        var result = await BrandService.Get(userId);
-        BrandsList = new List<Brand>(result);
+        return userId;
     }
 
 }

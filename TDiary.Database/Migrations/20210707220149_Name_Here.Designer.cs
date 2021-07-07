@@ -10,8 +10,8 @@ using TDiary.Database;
 namespace TDiary.Database.Migrations
 {
     [DbContext(typeof(TDiaryDatabaseContext))]
-    [Migration("20210615163129_Initial")]
-    partial class Initial
+    [Migration("20210707220149_Name_Here")]
+    partial class Name_Here
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

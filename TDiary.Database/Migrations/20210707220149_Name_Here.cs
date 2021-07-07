@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace TDiary.Database.Migrations
 {
-    public partial class Initial : Migration
+    public partial class Name_Here : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

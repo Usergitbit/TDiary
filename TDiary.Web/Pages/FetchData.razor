@@ -1,7 +1,8 @@
 ﻿@page "/fetchdata"
 @attribute [Authorize]
-@inject EventService eventService
+@inject IEventService eventService
 @inject NavigationManager NavigationManager
+@inject NetworkStateService NetworkStateService
 
 <h1>Weather forecast</h1>
 
@@ -34,15 +35,24 @@ else
             }
         </tbody>
     </table>
+    @if (Online)
+    {
+        <div>Network online</div>
+    }
+    else
+    {
+        <div>Network offline</div>
+    }
 }
 
 @code {
-    private List<Event> forecasts;
+    private List<Event> forecasts = new List<Event>();
+    public bool Online { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-
-        forecasts = await eventService.Get(Guid.Empty, DateTime.MinValue);
+        Online = await NetworkStateService.IsOnline();
+        //forecasts = await eventService.Get(Guid.Empty, DateTime.MinValue);
     }
 
     public class WeatherForecast

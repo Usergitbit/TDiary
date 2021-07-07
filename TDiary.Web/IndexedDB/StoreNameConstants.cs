@@ -7,7 +7,8 @@ namespace TDiary.Web.IndexedDB
 {
     public static class StoreNameConstants
     {
-        public const string Events = "Events";
-        public const string Brands = "Brands";
+        public const string Events = "events";
+        public const string UnsynchronizedEvents = "unsynchronizedEvents";
+        public const string Brands = "brands";
     }
 }

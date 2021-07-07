@@ -22,7 +22,6 @@ namespace TDiary.Database.Configurations.Base
                  .IsRequired();
 
             builder.Property(p => p.TimeZone)
-                 .HasConversion(tz => tz.ToSerializedString(), s => TimeZoneInfo.FromSerializedString(s))
                  .IsRequired();
 
             builder.Property(p => p.UserId)

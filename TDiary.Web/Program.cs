@@ -61,17 +61,29 @@ namespace TDiary.Web
                 handler.InnerHandler = new HttpClientHandler();
                 return new GrpcWebHandler(GrpcWebMode.GrpcWeb, handler);
             });
-            builder.Services.AddScoped<EventService>();
+            builder.Services.AddScoped<IEventService, EventService>();
             builder.Services.AddScoped<IBrandService, BrandService>();
+            builder.Services.AddSingleton<NetworkStateService>();
+            builder.Services.AddScoped<ISynchronizationService, SynchronizationService>();
 
 
             builder.Services.AddIndexedDB(dbStore =>
             {
                 dbStore.DbName = "TDiary"; 
+                //todo: get from somewhere to do comparisons for recreation
                 dbStore.Version = 1;
 
                 var eventsSchema = new SchemaBuilder<Event>()
                     .StoreName(StoreNameConstants.Events)
+                    .BaseProperties()
+                    .Property("entity")
+                    .Property("eventType")
+                    .Property("version")
+                    .Property("data")
+                    .Build();
+
+                var unsynchronizedEventsSchema = new SchemaBuilder<Event>()
+                    .StoreName(StoreNameConstants.UnsynchronizedEvents)
                     .BaseProperties()
                     .Property("entity")
                     .Property("eventType")
@@ -85,7 +97,7 @@ namespace TDiary.Web
                     .Property("name")
                     .Build();
 
-                dbStore.Stores.AddRange(new[] { eventsSchema, brandsSchema });
+                dbStore.Stores.AddRange(new[] { eventsSchema, brandsSchema, unsynchronizedEventsSchema });
             });
 
             await builder.Build().RunAsync();
