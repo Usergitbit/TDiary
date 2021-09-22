@@ -88,7 +88,7 @@ namespace TDiary.Web.Services
 
             var reply = await eventClient.GetEventsAsync(new GetEventsRequest
             {
-                LastEventDateUtc = Timestamp.FromDateTime(DateTime.UtcNow.AddYears(-100))
+                LastEventDateUtc = Timestamp.FromDateTime(lastEventDateUtc)
             });
             var events = mapper.Map<List<Event>>(reply.EventData);
 
