@@ -13,6 +13,7 @@ using TDiary.Common.Extensions;
 using TDiary.Api.Extensions;
 using TDiary.Common.Exceptions;
 using TDiary.Grpc.Protos;
+using TDiary.Api.Services.Interfaces;
 
 namespace TDiary.Api.Grpc
 {

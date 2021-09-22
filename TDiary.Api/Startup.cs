@@ -16,6 +16,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TDiary.Api.Grpc;
 using TDiary.Api.Services;
+using TDiary.Api.Services.Interfaces;
 using TDiary.Api.Validators;
 using TDiary.Automapper;
 using TDiary.Common.ServiceContracts;

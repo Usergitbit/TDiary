@@ -20,6 +20,7 @@ using TDiary.Common.ServiceContracts;
 using TDiary.Web.IndexedDB.SchemaBuilder;
 using TDiary.Common.Models.Entities;
 using TDiary.Web.IndexedDB;
+using TDiary.Web.Services.Interfaces;
 
 namespace TDiary.Web
 {
@@ -61,8 +62,10 @@ namespace TDiary.Web
                 handler.InnerHandler = new HttpClientHandler();
                 return new GrpcWebHandler(GrpcWebMode.GrpcWeb, handler);
             });
-            builder.Services.AddScoped<IEventService, EventService>();
+
+            builder.Services.AddScoped<Services.Interfaces.IEventService, EventService>();
             builder.Services.AddScoped<IBrandService, BrandService>();
+            builder.Services.AddScoped<IEventPlayerService, EventPlayerService>();
             builder.Services.AddSingleton<NetworkStateService>();
             builder.Services.AddScoped<ISynchronizationService, SynchronizationService>();
 

@@ -28,7 +28,8 @@
         var isOnline = await NetworkStateService.IsOnline();
         if (isOnline)
         {
-            await SynchronizationService.Synchronize();
+            var userId = await GetUserId();
+            await SynchronizationService.Synchronize(userId);
         }
         await Get();
     }

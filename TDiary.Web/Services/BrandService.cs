@@ -13,12 +13,10 @@ namespace TDiary.Web.Services
     public class BrandService : IBrandService
     {
         private readonly IndexedDBManager dbManager;
-        private readonly AuthenticationStateProvider authenticationStateProvider;
 
-        public BrandService(IndexedDBManager dbManager, AuthenticationStateProvider authenticationStateProvider)
+        public BrandService(IndexedDBManager dbManager)
         {
             this.dbManager = dbManager;
-            this.authenticationStateProvider = authenticationStateProvider;
         }
         public async Task Add(Brand brand)
         {

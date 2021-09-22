@@ -7,6 +7,6 @@ namespace TDiary.Common.ServiceContracts
 {
     public interface ISynchronizationService
     {
-        Task Synchronize();
+        Task Synchronize(Guid userId);
     }
 }
