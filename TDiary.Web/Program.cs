@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using TDiary.Grpc.Protos;
-using TDiary.Automapper;
 using TDiary.Web.Services;
 using Grpc.Core.Interceptors;
 using Grpc.Core;
@@ -49,8 +48,6 @@ namespace TDiary.Web
             {
                 builder.Configuration.Bind("oidc", options.ProviderOptions);
             }).AddAccountClaimsPrincipalFactory<OfflineAccountClaimsPrincipalFactory>();
-
-            builder.Services.AddAutoMapper(typeof(EventProfile).Assembly);
 
             builder.Services.AddGrpcClient<EventProto.EventProtoClient>(o =>
             {

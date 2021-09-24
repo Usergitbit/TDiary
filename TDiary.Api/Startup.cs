@@ -18,7 +18,6 @@ using TDiary.Api.Grpc;
 using TDiary.Api.Services;
 using TDiary.Api.Services.Interfaces;
 using TDiary.Api.Validators;
-using TDiary.Automapper;
 using TDiary.Common.ServiceContracts;
 using TDiary.Database;
 
@@ -48,8 +47,6 @@ namespace TDiary.Api
             services.AddScoped<IEventService, EventService>();
 
             services.AddSingleton<EventValidator>();
-
-            services.AddAutoMapper(typeof(EventProfile).Assembly);
 
             services.AddCors(options =>
             {

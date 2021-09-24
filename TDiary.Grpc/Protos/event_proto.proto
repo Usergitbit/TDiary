@@ -47,6 +47,7 @@ message EventData {
   int32 version = 5;
   string data = 6;
   AuditData audit_data = 7;
+  string user_id = 8;
 }
 
 message AuditData {

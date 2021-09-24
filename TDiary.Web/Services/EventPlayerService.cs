@@ -31,14 +31,20 @@ namespace TDiary.Web.Services
 
         public Task UndoEvent(Event eventEntity)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         private async Task PlayBrandEvent(Event eventEntity)
         {
             var brand = JsonSerializer.Deserialize<Brand>(eventEntity.Data);
-            brand.UserId = eventEntity.UserId;
-            brand.Id = Guid.NewGuid();
+            if(brand.UserId == Guid.Empty)
+            {
+                brand.UserId = eventEntity.UserId;
+            }
+            if(brand.Id == Guid.Empty)
+            {
+                brand.Id = Guid.NewGuid();
+            }
             await brandService.Add(brand);
         }
     }

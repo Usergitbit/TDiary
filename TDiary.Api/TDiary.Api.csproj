@@ -5,8 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="10.1.1" />
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.38.0" />
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.38.0" />
     <PackageReference Include="Grpc.AspNetCore.Web" Version="2.38.0" />
@@ -30,7 +28,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TDiary.Automapper\TDiary.Automapper.csproj" />
     <ProjectReference Include="..\TDiary.Database\TDiary.Database.csproj" />
     <ProjectReference Include="..\TDiary.Grpc\TDiary.Grpc.csproj" />
   </ItemGroup>
