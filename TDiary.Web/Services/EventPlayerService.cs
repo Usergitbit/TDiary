@@ -37,14 +37,8 @@ namespace TDiary.Web.Services
         private async Task PlayBrandEvent(Event eventEntity)
         {
             var brand = JsonSerializer.Deserialize<Brand>(eventEntity.Data);
-            if(brand.UserId == Guid.Empty)
-            {
-                brand.UserId = eventEntity.UserId;
-            }
-            if(brand.Id == Guid.Empty)
-            {
-                brand.Id = Guid.NewGuid();
-            }
+            brand.CreatedAt = DateTime.Now;
+            brand.CreatedAtUtc = DateTime.UtcNow;
             await brandService.Add(brand);
         }
     }

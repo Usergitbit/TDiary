@@ -51,8 +51,8 @@ namespace TDiary.Api.Grpc
                     Data = request.EventData.Data,
                     Entity = request.EventData.Entity,
                     EventType = (Common.Models.Entities.Enums.EventType)request.EventData.EventType,
-                    ModifiedtAt = request.EventData.AuditData.ModifiedAt.ToDateTime(),
-                    ModifiedAtUtc = request.EventData.AuditData.ModifiedAtUtc.ToDateTime(),
+                    ModifiedtAt = request.EventData.AuditData.ModifiedAt.ToNullMinimumDateTime(),
+                    ModifiedAtUtc = request.EventData.AuditData.ModifiedAtUtc.ToNullMinimumDateTime(),
                     TimeZone = request.EventData.AuditData.TimeZone,
                     UserId = userId,
                     Version = request.EventData.Version

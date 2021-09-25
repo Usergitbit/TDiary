@@ -60,7 +60,7 @@ namespace TDiary.Web
                 return new GrpcWebHandler(GrpcWebMode.GrpcWeb, handler);
             });
 
-            builder.Services.AddScoped<Services.Interfaces.IEventService, EventService>();
+            builder.Services.AddScoped<IEventService, EventService>();
             builder.Services.AddScoped<IBrandService, BrandService>();
             builder.Services.AddScoped<IEventPlayerService, EventPlayerService>();
             builder.Services.AddSingleton<NetworkStateService>();

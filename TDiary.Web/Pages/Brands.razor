@@ -38,6 +38,7 @@
     {
         var userId = await GetUserId();
         Brand.UserId = userId;
+        Brand.Id = Guid.NewGuid();
         var addBrandEvent = new Event
         {
             CreatedAt = DateTime.Now,

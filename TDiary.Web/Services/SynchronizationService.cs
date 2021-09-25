@@ -1,6 +1,5 @@
 ﻿using Blazored.LocalStorage;
 using Google.Protobuf.WellKnownTypes;
-using Microsoft.AspNetCore.Components.Authorization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +8,6 @@ using TDiary.Common.Models.Entities;
 using TDiary.Common.ServiceContracts;
 using TDiary.Grpc.Protos;
 using TDiary.Web.IndexedDB;
-using TDiary.Web.Services.Interfaces;
 using TG.Blazor.IndexedDB;
 using TDiary.Common.Extensions;
 
@@ -17,20 +15,22 @@ namespace TDiary.Web.Services
 {
     public class SynchronizationService : ISynchronizationService
     {
+        private const string lastSuccesfullSyncDatUtcKey = "lastSuccessfullSyncDateUtc";
+
         private readonly IndexedDBManager dbManager;
         private readonly IEventPlayerService eventPlayerService;
-        private readonly AuthenticationStateProvider authenticationStateProvider;
         private readonly EventProto.EventProtoClient eventClient;
+        private readonly ILocalStorageService localStorageService;
 
         public SynchronizationService(IndexedDBManager dbManager,
             IEventPlayerService eventPlayerService,
-            AuthenticationStateProvider authenticationStateProvider,
-            EventProto.EventProtoClient eventClient)
+            EventProto.EventProtoClient eventClient,
+            ILocalStorageService localStorageService)
         {
             this.dbManager = dbManager;
             this.eventPlayerService = eventPlayerService;
-            this.authenticationStateProvider = authenticationStateProvider;
             this.eventClient = eventClient;
+            this.localStorageService = localStorageService;
         }
 
         public async Task Synchronize(Guid userId)
@@ -89,11 +89,15 @@ namespace TDiary.Web.Services
                 await dbManager.AddRecord(new StoreRecord<Event> { Storename = StoreNameConstants.Events, Data = eventEntity });
                 await eventPlayerService.PlayEvent(eventEntity);
             }
+
+            await localStorageService.SetItemAsync(lastSuccesfullSyncDatUtcKey, DateTime.UtcNow);
         }
 
         private static MergeResult MergeConflicts(List<Event> incomingEvents, List<Event> unsynchronizedEvents)
         {
-            // TODO: implement conflict solving;
+            // TODO: implement proper conflict solving;
+            // steps: 
+            // check incoming insert events - all of these can be pulled safely
             var mergeResult = new MergeResult
             {
                 EventsToBePulled = incomingEvents,
@@ -116,14 +120,15 @@ namespace TDiary.Web.Services
             // if access token exception => 3. if sts online => go to login
             //                                 if sts offline => skip and check last sync date to show warning if it was a long time ago
 
+            // maybe simpler sync flow:
+            // if get remotes events OK => sync
+            // if get remote events fails => skip and log reason for failure
+            // if the fail is access token related it will get refreshed when navigating to some other page at some point and the sync will run there
+
+
             // repository flow
             // if online => sync
             // return data from cache
-            var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
-            var claims = user.Claims;
-            var userIdClaim = claims.FirstOrDefault(c => c.Type == "id").Value;
-            userId = Guid.Parse(userIdClaim);
 
             var reply = await eventClient.GetEventsAsync(new GetEventsRequest
             {
