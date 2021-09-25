@@ -10,8 +10,8 @@ using TDiary.Database;
 namespace TDiary.Database.Migrations
 {
     [DbContext(typeof(TDiaryDatabaseContext))]
-    [Migration("20210707220149_Name_Here")]
-    partial class Name_Here
+    [Migration("20210925003145_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -233,6 +233,8 @@ namespace TDiary.Database.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedAtUtc");
 
                     b.ToTable("Events");
                 });

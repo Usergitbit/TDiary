@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace TDiary.Database.Migrations
 {
-    public partial class Name_Here : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -174,6 +174,11 @@ namespace TDiary.Database.Migrations
                 name: "IX_DailyFoodItems_PlateId",
                 table: "DailyFoodItems",
                 column: "PlateId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Events_CreatedAtUtc",
+                table: "Events",
+                column: "CreatedAtUtc");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FoodItems_BrandId",

@@ -25,6 +25,8 @@ namespace TDiary.Database.Configurations
 
             builder.Property(p => p.Version)
                 .IsRequired();
+
+            builder.HasIndex(b => b.CreatedAtUtc);
         }
     }
 }

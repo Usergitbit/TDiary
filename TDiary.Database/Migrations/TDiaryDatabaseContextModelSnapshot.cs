@@ -232,6 +232,8 @@ namespace TDiary.Database.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedAtUtc");
+
                     b.ToTable("Events");
                 });
 

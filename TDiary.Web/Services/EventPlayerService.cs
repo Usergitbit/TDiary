@@ -39,6 +39,7 @@ namespace TDiary.Web.Services
             var brand = JsonSerializer.Deserialize<Brand>(eventEntity.Data);
             brand.CreatedAt = DateTime.Now;
             brand.CreatedAtUtc = DateTime.UtcNow;
+            brand.TimeZone = TimeZoneInfo.Local.Id;
             await brandService.Add(brand);
         }
     }
