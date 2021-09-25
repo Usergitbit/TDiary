@@ -29,7 +29,7 @@ namespace TDiary.Api.Services
             if (existingEvent != null)
                 throw new DuplicateIdException(eventEntity.Id, nameof(Event));
 
-            await tdiaryDatabaseContext.AddAsync(eventEntity);
+            tdiaryDatabaseContext.Add(eventEntity);
             await tdiaryDatabaseContext.SaveChangesAsync();
         }
 
