@@ -11,6 +11,8 @@ namespace TDiary.Common.Models.Entities
         public string Entity { get; set; }
         public EventType EventType { get; set; }
         public int Version { get; set; }
+        public string Changes { get; set; }
         public string Data { get; set; }
+        public Guid EntityId { get; set; }
     }
 }
