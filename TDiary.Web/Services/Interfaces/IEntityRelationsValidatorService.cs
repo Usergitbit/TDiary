@@ -6,7 +6,7 @@ using TDiary.Common.Models.Entities;
 
 namespace TDiary.Web.Services.Interfaces
 {
-    public interface IEntityRelationsValidator
+    public interface IEntityRelationsValidatorService
     {
         Task<bool> Validate(Event eventEntity);
     }

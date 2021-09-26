@@ -1,17 +1,12 @@
 using System;
 using System.Net.Http;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Text;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using TDiary.Grpc.Protos;
 using TDiary.Web.Services;
-using Grpc.Core.Interceptors;
-using Grpc.Core;
 using Grpc.Net.Client.Web;
 using Blazored.LocalStorage;
 using TG.Blazor.IndexedDB;
@@ -65,6 +60,8 @@ namespace TDiary.Web
             builder.Services.AddScoped<IEventPlayerService, EventPlayerService>();
             builder.Services.AddSingleton<NetworkStateService>();
             builder.Services.AddScoped<ISynchronizationService, SynchronizationService>();
+            builder.Services.AddScoped<IUpdateEventMergerService, UpdateEventMergerService>();
+            builder.Services.AddScoped<IEntityRelationsValidatorService, EntityRelationsValidatorService>();
 
 
             builder.Services.AddIndexedDB(dbStore =>

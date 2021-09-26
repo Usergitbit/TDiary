@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using TDiary.Common.Models.Domain;
 using TDiary.Common.Models.Domain.Enums;
 using TDiary.Common.Models.Entities;
@@ -17,7 +15,6 @@ namespace TDiary.Common.ServiceContracts.Implementations
             {
                 EventResolutions = ResolveEvents(incomingEvents, outgoingEvents)
             };
-
 
             return mergeResult;
         }
@@ -87,7 +84,6 @@ namespace TDiary.Common.ServiceContracts.Implementations
                 }
                 affectedEntity.EntityState = entityState;
             }
-
 
             return result;
         }

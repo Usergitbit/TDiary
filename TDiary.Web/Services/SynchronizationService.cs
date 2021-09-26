@@ -12,8 +12,6 @@ using TG.Blazor.IndexedDB;
 using TDiary.Common.Extensions;
 using TDiary.Common.Models.Domain.Enums;
 using TDiary.Web.Services.Interfaces;
-using TDiary.Common.Models.Domain;
-using System.Text.Json;
 
 namespace TDiary.Web.Services
 {
@@ -26,14 +24,16 @@ namespace TDiary.Web.Services
         private readonly EventProto.EventProtoClient eventClient;
         private readonly ILocalStorageService localStorageService;
         private readonly IMergeService mergeService;
-        private readonly IEntityRelationsValidator entityRelationsValidator;
+        private readonly IEntityRelationsValidatorService entityRelationsValidator;
+        private readonly IUpdateEventMergerService updateEventMergerService;
 
         public SynchronizationService(IndexedDBManager dbManager,
             IEventPlayerService eventPlayerService,
             EventProto.EventProtoClient eventClient,
             ILocalStorageService localStorageService,
             IMergeService mergeService,
-            IEntityRelationsValidator entityRelationsValidator)
+            IEntityRelationsValidatorService entityRelationsValidator,
+            IUpdateEventMergerService updateEventMergerService)
         {
             this.dbManager = dbManager;
             this.eventPlayerService = eventPlayerService;
@@ -41,6 +41,7 @@ namespace TDiary.Web.Services
             this.localStorageService = localStorageService;
             this.mergeService = mergeService;
             this.entityRelationsValidator = entityRelationsValidator;
+            this.updateEventMergerService = updateEventMergerService;
         }
 
         public async Task Synchronize(Guid userId)
@@ -98,7 +99,7 @@ namespace TDiary.Web.Services
                         }
                         break;
                     case EventResolutionOperation.Merge:
-                        var mergeEvent = CreateMergeEvent(eventResolution);
+                        var mergeEvent = updateEventMergerService.Merge(eventResolution.ServerEvent, eventResolution.Event);
                         await Push(mergeEvent);
                         await dbManager.AddRecord(new StoreRecord<Event>
                         {
@@ -222,55 +223,6 @@ namespace TDiary.Web.Services
 
             return events.ToList();
         }
-
-        //TODO: merging for all entities
-        private Event CreateMergeEvent(EventResolution eventResolution)
-        {
-            var eventEntity = new Event
-            {
-                CreatedAt = DateTime.Now,
-                CreatedAtUtc = DateTime.UtcNow,
-                Entity = eventResolution.Event.Entity,
-                EntityId = eventResolution.Event.EntityId,
-                EventType = Common.Models.Entities.Enums.EventType.Update,
-                Id = Guid.NewGuid(),
-                TimeZone = TimeZoneInfo.Local.Id,
-                UserId = eventResolution.Event.UserId,
-                Version = eventResolution.Event.Version
-            };
-
-            var serverChanges = JsonSerializer.Deserialize<Dictionary<string, object>>(eventResolution.ServerEvent.Changes);
-            var serverBrand = JsonSerializer.Deserialize<Brand>(eventResolution.ServerEvent.Data);
-            var localChanges = JsonSerializer.Deserialize<Dictionary<string, object>>(eventResolution.Event.Changes);
-            var localBrand = JsonSerializer.Deserialize<Brand>(eventResolution.Event.Data);
-            var mergedBrand = serverBrand;
-            var changes = new Dictionary<string, object>();
-            foreach(var changedProp in localChanges.Keys)
-            {
-                if (serverChanges.ContainsKey(changedProp))
-                {
-                    // TODO: maybe move in service and not use reflection
-                    if(eventResolution.ServerEvent.CreatedAtUtc < eventResolution.Event.CreatedAtUtc)
-                    {
-                        var localBrandPropertyValue = localBrand.GetType().GetProperty(changedProp).GetValue(localBrand);
-                        mergedBrand.GetType().GetProperty(changedProp).SetValue(mergedBrand, localBrandPropertyValue);
-                        changes.Add(changedProp, localBrandPropertyValue);
-                    }
-                }
-                else
-                {
-                    var localBrandPropertyValue = localBrand.GetType().GetProperty(changedProp).GetValue(localBrand);
-                    mergedBrand.GetType().GetProperty(changedProp).SetValue(mergedBrand, localBrandPropertyValue);
-                    changes.Add(changedProp, localBrandPropertyValue);
-                }
-            }
-
-            eventEntity.Data = JsonSerializer.Serialize(mergedBrand);
-            eventEntity.Changes = JsonSerializer.Serialize(changes);
-
-            return eventEntity;
-        }
-
     }
 
 
