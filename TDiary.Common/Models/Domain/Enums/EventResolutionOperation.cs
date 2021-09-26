@@ -23,12 +23,9 @@ namespace TDiary.Common.Models.Domain.Enums
         /// </summary>
         Merge,
         /// <summary>
-        /// Remove from local, used when deleted in both
-        /// </summary>
-        Remove,
-        /// <summary>
         /// Nothing is to be done with this event
         /// </summary>
-        NoOp
+        NoOp,
+        PushIfValid
     }
 }

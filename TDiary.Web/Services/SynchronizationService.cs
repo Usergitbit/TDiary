@@ -10,6 +10,10 @@ using TDiary.Grpc.Protos;
 using TDiary.Web.IndexedDB;
 using TG.Blazor.IndexedDB;
 using TDiary.Common.Extensions;
+using TDiary.Common.Models.Domain.Enums;
+using TDiary.Web.Services.Interfaces;
+using TDiary.Common.Models.Domain;
+using System.Text.Json;
 
 namespace TDiary.Web.Services
 {
@@ -21,16 +25,22 @@ namespace TDiary.Web.Services
         private readonly IEventPlayerService eventPlayerService;
         private readonly EventProto.EventProtoClient eventClient;
         private readonly ILocalStorageService localStorageService;
+        private readonly IMergeService mergeService;
+        private readonly IEntityRelationsValidator entityRelationsValidator;
 
         public SynchronizationService(IndexedDBManager dbManager,
             IEventPlayerService eventPlayerService,
             EventProto.EventProtoClient eventClient,
-            ILocalStorageService localStorageService)
+            ILocalStorageService localStorageService,
+            IMergeService mergeService,
+            IEntityRelationsValidator entityRelationsValidator)
         {
             this.dbManager = dbManager;
             this.eventPlayerService = eventPlayerService;
             this.eventClient = eventClient;
             this.localStorageService = localStorageService;
+            this.mergeService = mergeService;
+            this.entityRelationsValidator = entityRelationsValidator;
         }
 
         public async Task Synchronize(Guid userId)
@@ -56,19 +66,63 @@ namespace TDiary.Web.Services
                 Console.WriteLine($"Aborting sync. Failed to get incoming events: {ex.Message}\n{ex.StackTrace}");
                 return;
             }
+
             var unsynchronizedEvents = await GetUnsynchronized(userId);
-            var mergeResult = MergeConflicts(incomingEvents, unsynchronizedEvents);
-            foreach (var eventEntity in mergeResult.EventsToBePushed)
+
+            // TODO: create downloadable backup of unsynchronized events
+            var mergeResult = mergeService.Merge(incomingEvents, unsynchronizedEvents);
+            while(mergeResult.EventResolutions.TryDequeue(out var eventResolution))
             {
-                await dbManager.DeleteRecord(StoreNameConstants.UnsynchronizedEvents, eventEntity.Id);
-                var eventData = new EventData
+                switch (eventResolution.EventResolutionOperation)
                 {
-                    Data = eventEntity.Data,
-                    Entity = eventEntity.Entity,
-                    EventType = (EventType)eventEntity.EventType,
-                    Id = eventEntity.Id.ToString(),
-                    UserId = eventEntity.UserId.ToString(),
-                    Version = eventEntity.Version,
+
+                    case EventResolutionOperation.UndoAndRemove:
+                        await eventPlayerService.UndoEvent(eventResolution.Event);
+                        await dbManager.DeleteRecord(StoreNameConstants.UnsynchronizedEvents, eventResolution.Event.Id);
+                        break;
+                    case EventResolutionOperation.Pull:
+                        await dbManager.AddRecord(new StoreRecord<Event> 
+                        { 
+                            Storename = StoreNameConstants.Events, 
+                            Data = eventResolution.Event 
+                        });
+                        await eventPlayerService.PlayEvent(eventResolution.Event);
+                        break;
+                    case EventResolutionOperation.Push:
+                        await Push(eventResolution.Event);
+                        break;
+                    case EventResolutionOperation.PushIfValid:
+                        if (await entityRelationsValidator.Validate(eventResolution.Event))
+                        {
+                            await Push(eventResolution.Event);
+                        }
+                        break;
+                    case EventResolutionOperation.Merge:
+                        var mergeEvent = CreateMergeEvent(eventResolution);
+                        await Push(mergeEvent);
+                        await dbManager.AddRecord(new StoreRecord<Event>
+                        {
+                            Storename = StoreNameConstants.Events,
+                            Data = mergeEvent
+                        });
+                        await eventPlayerService.PlayEvent(mergeEvent);
+                        break;
+                    case EventResolutionOperation.NoOp:
+                        break;
+                    default:
+                        throw new NotImplementedException($"Event resolution {eventResolution.EventResolutionOperation} not implemented.");
+                }
+            }
+
+            await localStorageService.SetItemAsync(lastSuccesfullSyncDatUtcKey, DateTime.UtcNow);
+        }
+
+        private async Task Push(Event eventEntity)
+        {
+            await eventClient.AddEventAsync(new AddEventRequest
+            {
+                EventData = new EventData
+                {
                     AuditData = new AuditData
                     {
                         CreatedAt = Timestamp.FromDateTime(eventEntity.CreatedAt.AsUtc()),
@@ -76,43 +130,21 @@ namespace TDiary.Web.Services
                         ModifiedAt = Timestamp.FromDateTime(eventEntity.ModifiedtAt.AsUtcNullMinimum()),
                         ModifiedAtUtc = Timestamp.FromDateTime(eventEntity.ModifiedAtUtc.AsUtcNullMinimum()),
                         TimeZone = eventEntity.TimeZone
-                    }
-                };
-                var reply = await eventClient.AddEventAsync(new AddEventRequest
-                {
-                    EventData = eventData
-                });
-                await dbManager.AddRecord(new StoreRecord<Event> { Storename = StoreNameConstants.Events, Data = eventEntity });
-            }
-            foreach (var eventEntity in mergeResult.EventsToBePulled)
+                    },
+                    Data = eventEntity.Data,
+                    Entity = eventEntity.Entity,
+                    EventType = (EventType)eventEntity.EventType,
+                    Id = eventEntity.Id.ToString(),
+                    UserId = eventEntity.UserId.ToString(),
+                    Version = eventEntity.Version
+                }
+            });
+            await dbManager.AddRecord(new StoreRecord<Event>
             {
-                await dbManager.AddRecord(new StoreRecord<Event> { Storename = StoreNameConstants.Events, Data = eventEntity });
-                await eventPlayerService.PlayEvent(eventEntity);
-            }
-
-            await localStorageService.SetItemAsync(lastSuccesfullSyncDatUtcKey, DateTime.UtcNow);
+                Storename = StoreNameConstants.Events,
+                Data = eventEntity
+            });
         }
-
-        private static MergeResult MergeConflicts(List<Event> incomingEvents, List<Event> unsynchronizedEvents)
-        {
-            // TODO: implement proper conflict solving;
-            // steps: 
-            // check incoming insert events - all of these can be pulled safely
-            var mergeResult = new MergeResult
-            {
-                EventsToBePulled = incomingEvents,
-                EventsToBePushed =  unsynchronizedEvents
-            };
-
-            return mergeResult;
-        }
-
-        private class MergeResult
-        {
-            public List<Event> EventsToBePushed { get; set; } = new();
-            public List<Event> EventsToBePulled { get; set; } = new();
-        }
-
         private async Task<List<Event>> GetRemoteEvents(Guid userId, DateTime lastEventDateUtc)
         {
             //sync flow:
@@ -190,6 +222,55 @@ namespace TDiary.Web.Services
 
             return events.ToList();
         }
+
+        //TODO: merging for all entities
+        private Event CreateMergeEvent(EventResolution eventResolution)
+        {
+            var eventEntity = new Event
+            {
+                CreatedAt = DateTime.Now,
+                CreatedAtUtc = DateTime.UtcNow,
+                Entity = eventResolution.Event.Entity,
+                EntityId = eventResolution.Event.EntityId,
+                EventType = Common.Models.Entities.Enums.EventType.Update,
+                Id = Guid.NewGuid(),
+                TimeZone = TimeZoneInfo.Local.Id,
+                UserId = eventResolution.Event.UserId,
+                Version = eventResolution.Event.Version
+            };
+
+            var serverChanges = JsonSerializer.Deserialize<Dictionary<string, object>>(eventResolution.ServerEvent.Changes);
+            var serverBrand = JsonSerializer.Deserialize<Brand>(eventResolution.ServerEvent.Data);
+            var localChanges = JsonSerializer.Deserialize<Dictionary<string, object>>(eventResolution.Event.Changes);
+            var localBrand = JsonSerializer.Deserialize<Brand>(eventResolution.Event.Data);
+            var mergedBrand = serverBrand;
+            var changes = new Dictionary<string, object>();
+            foreach(var changedProp in localChanges.Keys)
+            {
+                if (serverChanges.ContainsKey(changedProp))
+                {
+                    // TODO: maybe move in service and not use reflection
+                    if(eventResolution.ServerEvent.CreatedAtUtc < eventResolution.Event.CreatedAtUtc)
+                    {
+                        var localBrandPropertyValue = localBrand.GetType().GetProperty(changedProp).GetValue(localBrand);
+                        mergedBrand.GetType().GetProperty(changedProp).SetValue(mergedBrand, localBrandPropertyValue);
+                        changes.Add(changedProp, localBrandPropertyValue);
+                    }
+                }
+                else
+                {
+                    var localBrandPropertyValue = localBrand.GetType().GetProperty(changedProp).GetValue(localBrand);
+                    mergedBrand.GetType().GetProperty(changedProp).SetValue(mergedBrand, localBrandPropertyValue);
+                    changes.Add(changedProp, localBrandPropertyValue);
+                }
+            }
+
+            eventEntity.Data = JsonSerializer.Serialize(mergedBrand);
+            eventEntity.Changes = JsonSerializer.Serialize(changes);
+
+            return eventEntity;
+        }
+
     }
 
 

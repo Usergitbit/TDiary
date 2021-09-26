@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using TDiary.Common.Models.Domain;
 using TDiary.Common.Models.Domain.Enums;
 using TDiary.Common.Models.Entities;
-using TDiary.Common.Extensions;
 using TDiary.Common.Models.Entities.Enums;
 
 namespace TDiary.Common.ServiceContracts.Implementations
@@ -13,356 +13,167 @@ namespace TDiary.Common.ServiceContracts.Implementations
     {
         public MergeResult Merge(IEnumerable<Event> incomingEvents, IEnumerable<Event> outgoingEvents)
         {
-            var result = new MergeResult();
-            var unresolvedIncomingEvents = new List<Event>(incomingEvents);
-            var unresolvedfOutgoingEvents = new List<Event>(outgoingEvents);
-            var remoteEventResolutions = ResolveRemoteEvents(unresolvedIncomingEvents, unresolvedfOutgoingEvents);
-            foreach (var remoteEventResolution in remoteEventResolutions)
+            var mergeResult = new MergeResult
             {
-                result.EventResolutions.Enqueue(remoteEventResolution);
-            }
+                EventResolutions = ResolveEvents(incomingEvents, outgoingEvents)
+            };
 
-            return result;
+
+            return mergeResult;
         }
 
-        // TOO COMPLICATED?
-        // maybe simpler flow: undo all local events, order everything by date and go one by one depending on date updating the remaining depending on operation?
-
-        /// <summary>
-        /// General merge strategy: server is source of truth for conflicts that can not be merged.<br/>
-        /// Cases:<br/>
-        /// 1. inserted - pull incoming, push outgoing <br/>
-        /// 2. updated on server only pull incoming
-        /// 3. updated locally only push outgoing
-        /// 4. updated on server and updated locally - created merge event (play locally, push to server) <br/>
-        /// 5. updated on server and deleted locally: <br/>
-        /// --a. updated on server newer than deleted locally -> undo locally, pull incoming <br/>
-        /// --b. updated on server older than deleted locally -> push to server <br/>
-        /// 6. updated locally and deleted on server: <br/>
-        /// --a. deleted on server newer than updated locally -> remove local event, pull incoming <br/>
-        /// --b. deleted on server older than updated locally -> remove local event, pull incoming  <br/>
-        /// 7. deleted on both -> pull incoming (should be no-op, but should be removed from local) <br/>
-        /// 8. deleted on server
-        /// 9. deleted locally
-        /// </summary>
-        /// <param name="unresolvedIncomingEvents"></param>
-        /// <param name="unresolvedfOutgoingEvents"></param>
-        /// <returns></returns>
-        private IEnumerable<EventResolution> ResolveRemoteEvents(List<Event> unresolvedIncomingEvents, List<Event> unresolvedfOutgoingEvents)
+        private Queue<EventResolution> ResolveEvents(IEnumerable<Event> incomingEvents, IEnumerable<Event> outgoingEvents)
         {
-            var result = new List<EventResolution>();
-
-            // 1.
-            var insertResolutions = HandleInsertedBrands(unresolvedIncomingEvents, unresolvedfOutgoingEvents);
-            result.AddRange(insertResolutions);
-
-            // 2. && 3.
-            var nonConflictingUpdatesResolutions = HandleNonConflictingUpdatedBrands(unresolvedIncomingEvents, unresolvedfOutgoingEvents);
-            result.AddRange(nonConflictingUpdatesResolutions);
-
-            // 4.
-            var updatedServerUpdatedLocallyResolutions = HandleUpdatedServerUpdatedLocallyBrands(unresolvedIncomingEvents, unresolvedfOutgoingEvents);
-            result.AddRange(updatedServerUpdatedLocallyResolutions);
-
-            // 5.
-            var updatedOnServerDeletedLocallyResolutions = HandleUpdatedOnServerDeletedLocallyBrands(unresolvedIncomingEvents, unresolvedfOutgoingEvents);
-            result.AddRange(updatedOnServerDeletedLocallyResolutions);
-
-            // 6.
-            var updatedLocallyDeletedOnServerResolutions = HandleUpdatedLocallyDeletedOnServerBrands(unresolvedIncomingEvents, unresolvedfOutgoingEvents);
-            result.AddRange(updatedLocallyDeletedOnServerResolutions);
-
-            // 7.
-            var deletedInBothResolutions = HandleDeletedInBothBrands(unresolvedIncomingEvents, unresolvedfOutgoingEvents);
-            result.AddRange(deletedInBothResolutions);
-
-            // 8. 
-            var deletedOnServer = HandleDeletedInServerBrands(unresolvedIncomingEvents, unresolvedfOutgoingEvents);
-            result.AddRange(deletedOnServer);
-
-            // 9. 
-            // WHAT TO DO IF DELTED LOCALLY HAVE UPDATES REMOTE?
-
-            return result;
-        }
-
-        private IEnumerable<EventResolution> HandleInsertedBrands(List<Event> unresolvedIncomingEvents, List<Event> unresolvedfOutgoingEvents)
-        {
-            var result = new List<EventResolution>();
-
-            var brandsToPull = unresolvedIncomingEvents.Brands()
-                .Inserts()
-                .ToArray();
-            foreach (var brand in brandsToPull)
+            var eventResolutions = new Queue<EventResolution>();
+            foreach (var outgoingEvent in outgoingEvents)
             {
-                unresolvedIncomingEvents.Remove(brand);
-            }
-
-            var brandsToPullResolutions = brandsToPull.Select(e => new EventResolution
-            {
-                Event = e,
-                EventResolutionOperation = EventResolutionOperation.Pull,
-                Reason = "Server Brand insert is independent."
-            });
-
-            result.AddRange(brandsToPullResolutions);
-
-            var brandsToPush = unresolvedfOutgoingEvents.Brands()
-                .Inserts()
-                .ToArray();
-            foreach (var brand in brandsToPush)
-            {
-                unresolvedfOutgoingEvents.Remove(brand);
-            }
-
-            var brandsToPushResolutions = brandsToPush.Select(e => new EventResolution
-            {
-                Event = e,
-                EventResolutionOperation = EventResolutionOperation.Push,
-                Reason = "Local Brand insert is independent."
-            });
-
-            result.AddRange(brandsToPushResolutions);
-
-            return result;
-        }
-
-        private IEnumerable<EventResolution> HandleUpdatedServerUpdatedLocallyBrands(List<Event> unresolvedIncomingEvents, List<Event> unresolvedfOutgoingEvents)
-        {
-            var result = new List<EventResolution>();
-            var deletedLocallyIds = unresolvedfOutgoingEvents.Brands()
-                .Deletes()
-                .Select(e => e.EntityId)
-                .ToArray();
-            var serverUpdatedBrandEvents = unresolvedIncomingEvents.Brands()
-                .Updates()
-                .Where(e => !deletedLocallyIds.Contains(e.EntityId))
-                .ToArray();
-            foreach (var updatedBrandEvent in serverUpdatedBrandEvents)
-            {
-                var outgoingUpdateEvent = unresolvedfOutgoingEvents.Brands()
-                    .Updates()
-                    .FirstOrDefault(e => e.EntityId == updatedBrandEvent.EntityId);
-                var updatedLocally = outgoingUpdateEvent != null;
-                if (updatedLocally)
+                var eventResolution = new EventResolution
                 {
-                    result.Add(new EventResolution
-                    {
-                        Event = outgoingUpdateEvent,
-                        ServerEvent = updatedBrandEvent,
-                        EventResolutionOperation = EventResolutionOperation.Merge,
-                        Reason = "Brand updated both locally and on server, merge update event needs to be created."
-                    });
-
-                    unresolvedIncomingEvents.Remove(updatedBrandEvent);
-                    unresolvedfOutgoingEvents.Remove(outgoingUpdateEvent);
-                }
+                    Event = outgoingEvent,
+                    EventResolutionOperation = EventResolutionOperation.UndoAndRemove,
+                    Reason = "Undo all local events before playing remote events."
+                };
+                eventResolutions.Enqueue(eventResolution);
+            }
+            var incomingEventsResolutionState = ResolveRemoteEvents(incomingEvents);
+            foreach (var eventResolution in incomingEventsResolutionState.EventResolutions)
+            {
+                eventResolutions.Enqueue(eventResolution);
             }
 
-            return result;
+            var localEventsResolutions = ReconcileLocalEvents(incomingEventsResolutionState, outgoingEvents);
+            foreach (var localEventResolution in localEventsResolutions)
+            {
+                eventResolutions.Enqueue(localEventResolution);
+            }
+
+            return eventResolutions;
         }
 
-        private IEnumerable<EventResolution> HandleNonConflictingUpdatedBrands(List<Event> unresolvedIncomingEvents, List<Event> unresolvedfOutgoingEvents)
+        private IncomingEventResolutionState ResolveRemoteEvents(IEnumerable<Event> incomingEvents)
         {
-            var result = new List<EventResolution>();
-            var incomingUpdatedBrands = GetIncomingUpdatedNotTouchedLocally(unresolvedIncomingEvents, unresolvedfOutgoingEvents);
-            foreach (var incomingUpdatedBrand in incomingUpdatedBrands)
+            var result = new IncomingEventResolutionState();
+            foreach (var incomingEvent in incomingEvents)
             {
-                result.Add(new EventResolution
+                result.EventResolutions.Add(new EventResolution
                 {
-                    Event = incomingUpdatedBrand,
+                    Event = incomingEvent,
                     EventResolutionOperation = EventResolutionOperation.Pull,
-                    Reason = "Updated on only server must be pulled."
+                    Reason = "Remote events must be played after undoing local ones."
                 });
-                unresolvedIncomingEvents.Remove(incomingUpdatedBrand);
+                var entityState = EntityState.Untouched;
+                switch (incomingEvent.EventType)
+                {
+                    case EventType.Insert:
+                        entityState = EntityState.Inserted;
+                        break;
+                    case EventType.Update:
+                        entityState = EntityState.Updated;
+                        break;
+                    case EventType.Delete:
+                        entityState = EntityState.Deleted;
+                        break;
+                    default:
+                        break;
+                }
+                var affectedEntity = result.AffectedEntities.FirstOrDefault(e => e.AffectedEntityId == incomingEvent.EntityId);
+                if (affectedEntity == null)
+                {
+                    result.AffectedEntities.Add(new AffectedEntity
+                    {
+                        AffectedEntityId = incomingEvent.EntityId,
+                        LastAffectingEvent = incomingEvent,
+                    });
+                }
+                affectedEntity.EntityState = entityState;
             }
 
-            var outgoingUpdatedBrands = GetOutgoingUpdatedNotTouchedOnServer(unresolvedIncomingEvents, unresolvedfOutgoingEvents);
-            foreach (var outgoingUpdatedBrand in outgoingUpdatedBrands)
-            {
-                result.Add(new EventResolution
-                {
-                    Event = outgoingUpdatedBrand,
-                    EventResolutionOperation = EventResolutionOperation.Push,
-                    Reason = "Updated only locally must be pushed."
-                });
-                unresolvedfOutgoingEvents.Remove(outgoingUpdatedBrand);
-            }
 
             return result;
         }
 
-        private Event[] GetIncomingUpdatedNotTouchedLocally(List<Event> unresolvedIncomingEvents, List<Event> unresolvedfOutgoingEvents)
-        {
-            var touchedLocallyIds = unresolvedfOutgoingEvents.Brands()
-                .Where(e => e.EventType == EventType.Update || e.EventType == EventType.Delete)
-                .Select(e => e.EntityId)
-                .ToArray();
-
-            var updatedIncomingNotDeletedLocally = unresolvedIncomingEvents.Brands()
-                .Updates()
-                .Where(e => !touchedLocallyIds.Contains(e.EntityId))
-                .ToArray();
-
-            return updatedIncomingNotDeletedLocally;
-        }
-
-        private Event[] GetOutgoingUpdatedNotTouchedOnServer(List<Event> unresolvedIncomingEvents, List<Event> unresolvedfOutgoingEvents)
-        {
-            var touchedOnServerIds = unresolvedIncomingEvents.Brands()
-                .Where(e => e.EventType == EventType.Update || e.EventType == EventType.Delete)
-                .Select(e => e.EntityId)
-                .ToArray();
-
-            var updatedOutgoingNotDeletedOnServer = unresolvedfOutgoingEvents.Brands()
-                .Updates()
-                .Where(e => !touchedOnServerIds.Contains(e.EntityId))
-                .ToArray();
-
-            return updatedOutgoingNotDeletedOnServer;
-        }
-
-        private IEnumerable<EventResolution> HandleUpdatedOnServerDeletedLocallyBrands(List<Event> unresolvedIncomingEvents, List<Event> unresolvedfOutgoingEvents)
+        private IEnumerable<EventResolution> ReconcileLocalEvents(IncomingEventResolutionState incomingEventResolutionState, IEnumerable<Event> outgoingEvents)
         {
             var result = new List<EventResolution>();
-            var deletedLocallyIds = unresolvedfOutgoingEvents.Brands()
-                .Deletes()
-                .Select(e => e.EntityId)
-                .ToArray();
-            var updatedOnServerDeletedLocallyEvents = unresolvedIncomingEvents.Brands()
-                .Updates()
-                .Where(e => deletedLocallyIds.Contains(e.EntityId))
-                .ToArray();
-            foreach (var updatedOnServerDeletedLocally in updatedOnServerDeletedLocallyEvents)
+            foreach (var outgoingEvent in outgoingEvents)
             {
-                var deletedLocallyEvent = unresolvedfOutgoingEvents.FirstOrDefault(e => e.EntityId == updatedOnServerDeletedLocally.EntityId);
-                if (updatedOnServerDeletedLocally.CreatedAtUtc > deletedLocallyEvent.CreatedAtUtc)
+                var isAffectedByIncoming = incomingEventResolutionState.AffectedEntities.FirstOrDefault(e => e.AffectedEntityId == outgoingEvent.EntityId) != null;
+                if (!isAffectedByIncoming)
                 {
-                    result.Add(new EventResolution
+                    if (outgoingEvent.EventType == EventType.Insert)
                     {
-                        Event = deletedLocallyEvent,
-                        EventResolutionOperation = EventResolutionOperation.UndoAndRemove,
-                        Reason = "Local deletion must be undone when updated on server at a later date."
-                    });
-                    unresolvedfOutgoingEvents.Remove(deletedLocallyEvent);
-                    result.Add(new EventResolution
+                        result.Add(new EventResolution
+                        {
+                            Event = outgoingEvent,
+                            EventResolutionOperation = EventResolutionOperation.Push,
+                            Reason = "Local insert event is eligible for push."
+                        });
+                    }
+                    else
                     {
-                        Event = updatedOnServerDeletedLocally,
-                        EventResolutionOperation = EventResolutionOperation.Pull,
-                        Reason = "Updated on server should be pulled when newer than local deletion."
-                    });
-                    unresolvedIncomingEvents.Remove(updatedOnServerDeletedLocally);
+                        result.Add(new EventResolution
+                        {
+                            Event = outgoingEvent,
+                            EventResolutionOperation = EventResolutionOperation.PushIfValid,
+                            Reason = "Local event is not directly affected by pulled changes but relationships could be and should only be pushed if valid else it will be dropped."
+                        });
+                    }
                 }
                 else
                 {
-                    result.Add(new EventResolution
-                    {
-                        Event = deletedLocallyEvent,
-                        EventResolutionOperation = EventResolutionOperation.Push,
-                        Reason = "Local deletion should be pushed to server if newer than update on server."
-                    });
-                    unresolvedfOutgoingEvents.Remove(deletedLocallyEvent);
-                    unresolvedIncomingEvents.Remove(updatedOnServerDeletedLocally);
+                    var eventResolution = ReconcileLocalEvent(outgoingEvent, incomingEventResolutionState);
+                    result.Add(eventResolution);
                 }
             }
 
             return result;
         }
 
-        private IEnumerable<EventResolution> HandleUpdatedLocallyDeletedOnServerBrands(List<Event> unresolvedIncomingEvents, List<Event> unresolvedfOutgoingEvents)
+        private EventResolution ReconcileLocalEvent(Event outgoingEvent, IncomingEventResolutionState incomingEventResolutionState)
         {
-            var result = new List<EventResolution>();
-            var deletedOnServerIds = unresolvedIncomingEvents.Brands()
-                .Deletes()
-                .Select(e => e.EntityId)
-                .ToArray();
-            var updatedLocallyDeletedOnServerBrands = unresolvedfOutgoingEvents
-                .Brands()
-                .Updates()
-                .Where(e => deletedOnServerIds.Contains(e.EntityId))
-                .ToArray();
-            foreach (var updatedLocallyDeletedOnServer in updatedLocallyDeletedOnServerBrands)
+            var eventResolution = new EventResolution
             {
-                var deletedOnServerEvent = unresolvedIncomingEvents.Brands()
-                    .Deletes()
-                    .FirstOrDefault(e => e.EntityId == updatedLocallyDeletedOnServer.EntityId);
-                result.Add(new EventResolution
-                {
-                    Event = updatedLocallyDeletedOnServer,
-                    EventResolutionOperation = EventResolutionOperation.UndoAndRemove,
-                    Reason = "Local deleted must be undone when updated on server at later date."
-                });
-                unresolvedfOutgoingEvents.Remove(updatedLocallyDeletedOnServer);
-                result.Add(new EventResolution
-                {
-                    Event = deletedOnServerEvent,
-                    EventResolutionOperation = EventResolutionOperation.Pull,
-                    Reason = "Server deleted must be pulled when newer than local deleted"
-                });
-                unresolvedIncomingEvents.Remove(deletedOnServerEvent);
+                Event = outgoingEvent,
+                EventResolutionOperation = EventResolutionOperation.NoOp,
+                Reason = $"Could not determine course of action for event type {outgoingEvent.EventType} with id {outgoingEvent.Id}, entity {outgoingEvent.Entity} with entityId {outgoingEvent.EntityId}"
+            };
+
+            var affectedEntity = incomingEventResolutionState.AffectedEntities.FirstOrDefault(ae => ae.AffectedEntityId == outgoingEvent.EntityId);
+            switch (affectedEntity.EntityState)
+            {
+                case EntityState.Updated:
+                    if (outgoingEvent.EventType == EventType.Update)
+                    {
+                        eventResolution = new EventResolution
+                        {
+                            Event = outgoingEvent,
+                            EventResolutionOperation = EventResolutionOperation.Merge,
+                            Reason = "Entity was updated both locally and on server, changes must be merged.",
+                            ServerEvent = affectedEntity.LastAffectingEvent
+                        };
+                    }
+                    if (outgoingEvent.EventType == EventType.Delete)
+                    {
+                        eventResolution = new EventResolution
+                        {
+                            Event = outgoingEvent,
+                            EventResolutionOperation = EventResolutionOperation.NoOp,
+                            Reason = "Entity was updated on the server at a later date than it was deleted locally, no change will be performed."
+                        };
+                    }
+                    break;
+                case EntityState.Deleted:
+                    eventResolution = new EventResolution
+                    {
+                        Event = outgoingEvent,
+                        EventResolutionOperation = EventResolutionOperation.NoOp,
+                        Reason = $"Entity was deleted on the server, local event type {outgoingEvent.EventType} will be dropped.",
+                    };
+                    break;
             }
 
-            return result;
+            return eventResolution;
         }
 
-        private IEnumerable<EventResolution> HandleDeletedInBothBrands(List<Event> unresolvedIncomingEvents, List<Event> unresolvedfOutgoingEvents)
-        {
-            var result = new List<EventResolution>();
-            var deletedOnServer = unresolvedIncomingEvents.Brands()
-                .Deletes()
-                .Select(e => e.EntityId)
-                .ToArray();
-            var deletedLocally = unresolvedfOutgoingEvents.Brands()
-                .Deletes()
-                .Select(e => e.EntityId)
-                .ToArray();
-            var deletedInBothIds = deletedOnServer.Intersect(deletedLocally);
-            foreach(var deletedInBoth in deletedInBothIds)
-            {
-                var locallyDeleted = unresolvedfOutgoingEvents.Brands()
-                    .FirstOrDefault(e => e.EntityId == deletedInBoth);
-                result.Add(new EventResolution
-                {
-                    Event = locallyDeleted,
-                    EventResolutionOperation = EventResolutionOperation.Remove,
-                    Reason = "Deleted in both event can be removed from local."
-                });
-                unresolvedfOutgoingEvents.Remove(locallyDeleted);
-
-                var serverDeleted = unresolvedIncomingEvents.Brands()
-                    .FirstOrDefault(e => e.EntityId == deletedInBoth);
-                result.Add(new EventResolution
-                {
-                    Event = serverDeleted,
-                    EventResolutionOperation = EventResolutionOperation.Pull,
-                    Reason = "Deleted in both event be pulled as deletion is idempotent."
-                });
-                unresolvedIncomingEvents.Remove(serverDeleted);
-            }
-
-            return result;
-        }
-
-
-        private IEnumerable<EventResolution> HandleDeletedInServerBrands(List<Event> unresolvedIncomingEvents, List<Event> unresolvedfOutgoingEvents)
-        {
-            var result = new List<EventResolution>();
-            var deletedInServer = unresolvedIncomingEvents.Brands()
-                .Deletes()
-                .ToArray();
-            foreach(var deletedBrand in deletedInServer)
-            {
-                result.Add(new EventResolution
-                {
-                    Event = deletedBrand,
-                    EventResolutionOperation = EventResolutionOperation.Pull,
-                    Reason = "Deleted only in server can be pulled."
-                });
-                // TODO: DELETED RELATED ENTITIES + EVENTS?
-            }
-
-            return result;
-
-        }
     }
 }
