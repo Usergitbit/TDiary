@@ -22,6 +22,22 @@ namespace TDiary.Common.ServiceContracts.Implementations
         private Queue<EventResolution> ResolveEvents(IEnumerable<Event> incomingEvents, IEnumerable<Event> outgoingEvents)
         {
             var eventResolutions = new Queue<EventResolution>();
+            if (incomingEvents.Count() == 0)
+            {
+                foreach (var outgoingEvent in outgoingEvents)
+                {
+                    var eventResolution = new EventResolution
+                    {
+                        Event = outgoingEvent,
+                        EventResolutionOperation = EventResolutionOperation.Push,
+                        Reason = "Local events can be pushed when no incoming events."
+                    };
+                    eventResolutions.Enqueue(eventResolution);
+                }
+
+                return eventResolutions;
+            }
+
             foreach (var outgoingEvent in outgoingEvents)
             {
                 var eventResolution = new EventResolution
@@ -32,6 +48,7 @@ namespace TDiary.Common.ServiceContracts.Implementations
                 };
                 eventResolutions.Enqueue(eventResolution);
             }
+
             var incomingEventsResolutionState = ResolveRemoteEvents(incomingEvents);
             foreach (var eventResolution in incomingEventsResolutionState.EventResolutions)
             {
@@ -76,11 +93,12 @@ namespace TDiary.Common.ServiceContracts.Implementations
                 var affectedEntity = result.AffectedEntities.FirstOrDefault(e => e.AffectedEntityId == incomingEvent.EntityId);
                 if (affectedEntity == null)
                 {
-                    result.AffectedEntities.Add(new AffectedEntity
+                    affectedEntity = new AffectedEntity
                     {
                         AffectedEntityId = incomingEvent.EntityId,
                         LastAffectingEvent = incomingEvent,
-                    });
+                    };
+                    result.AffectedEntities.Add(affectedEntity);
                 }
                 affectedEntity.EntityState = entityState;
             }
@@ -91,29 +109,18 @@ namespace TDiary.Common.ServiceContracts.Implementations
         private IEnumerable<EventResolution> ReconcileLocalEvents(IncomingEventResolutionState incomingEventResolutionState, IEnumerable<Event> outgoingEvents)
         {
             var result = new List<EventResolution>();
+            var anyDeletes = incomingEventResolutionState.AffectedEntities.Any(e => e.EntityState == EntityState.Deleted);
             foreach (var outgoingEvent in outgoingEvents)
             {
                 var isAffectedByIncoming = incomingEventResolutionState.AffectedEntities.FirstOrDefault(e => e.AffectedEntityId == outgoingEvent.EntityId) != null;
                 if (!isAffectedByIncoming)
                 {
-                    if (outgoingEvent.EventType == EventType.Insert)
+                    result.Add(new EventResolution
                     {
-                        result.Add(new EventResolution
-                        {
-                            Event = outgoingEvent,
-                            EventResolutionOperation = EventResolutionOperation.Push,
-                            Reason = "Local insert event is eligible for push."
-                        });
-                    }
-                    else
-                    {
-                        result.Add(new EventResolution
-                        {
-                            Event = outgoingEvent,
-                            EventResolutionOperation = EventResolutionOperation.PushIfValid,
-                            Reason = "Local event is not directly affected by pulled changes but relationships could be and should only be pushed if valid else it will be dropped."
-                        });
-                    }
+                        Event = outgoingEvent,
+                        EventResolutionOperation = EventResolutionOperation.PushIfValid,
+                        Reason = "Local event is not directly affected by pulled changes but relationships could be and should only be pushed if valid else it will be dropped."
+                    });
                 }
                 else
                 {
