@@ -9,7 +9,7 @@ namespace TDiary.Common.ServiceContracts.Implementations
 {
     public class MergeService : IMergeService
     {
-        public MergeResult Merge(IEnumerable<Event> incomingEvents, IEnumerable<Event> outgoingEvents)
+        public MergeResult Merge(IReadOnlyList<Event> incomingEvents, IReadOnlyList<Event> outgoingEvents)
         {
             var mergeResult = new MergeResult
             {
@@ -19,10 +19,10 @@ namespace TDiary.Common.ServiceContracts.Implementations
             return mergeResult;
         }
 
-        private Queue<EventResolution> ResolveEvents(IEnumerable<Event> incomingEvents, IEnumerable<Event> outgoingEvents)
+        private Queue<EventResolution> ResolveEvents(IReadOnlyList<Event> incomingEvents, IReadOnlyList<Event> outgoingEvents)
         {
             var eventResolutions = new Queue<EventResolution>();
-            if (incomingEvents.Count() == 0)
+            if (incomingEvents.Count == 0)
             {
                 foreach (var outgoingEvent in outgoingEvents)
                 {
@@ -38,7 +38,8 @@ namespace TDiary.Common.ServiceContracts.Implementations
                 return eventResolutions;
             }
 
-            foreach (var outgoingEvent in outgoingEvents)
+            var reversedOrderOutgoingEvents = outgoingEvents.OrderByDescending(e => e.CreatedAtUtc).ToList();
+            foreach (var outgoingEvent in reversedOrderOutgoingEvents)
             {
                 var eventResolution = new EventResolution
                 {
@@ -64,7 +65,7 @@ namespace TDiary.Common.ServiceContracts.Implementations
             return eventResolutions;
         }
 
-        private IncomingEventResolutionState ResolveRemoteEvents(IEnumerable<Event> incomingEvents)
+        private IncomingEventResolutionState ResolveRemoteEvents(IReadOnlyList<Event> incomingEvents)
         {
             var result = new IncomingEventResolutionState();
             foreach (var incomingEvent in incomingEvents)
@@ -106,10 +107,9 @@ namespace TDiary.Common.ServiceContracts.Implementations
             return result;
         }
 
-        private IEnumerable<EventResolution> ReconcileLocalEvents(IncomingEventResolutionState incomingEventResolutionState, IEnumerable<Event> outgoingEvents)
+        private IEnumerable<EventResolution> ReconcileLocalEvents(IncomingEventResolutionState incomingEventResolutionState, IReadOnlyList<Event> outgoingEvents)
         {
             var result = new List<EventResolution>();
-            var anyDeletes = incomingEventResolutionState.AffectedEntities.Any(e => e.EntityState == EntityState.Deleted);
             foreach (var outgoingEvent in outgoingEvents)
             {
                 var isAffectedByIncoming = incomingEventResolutionState.AffectedEntities.FirstOrDefault(e => e.AffectedEntityId == outgoingEvent.EntityId) != null;

@@ -9,6 +9,6 @@ namespace TDiary.Common.ServiceContracts
 {
     public interface IMergeService
     {
-        MergeResult Merge(IEnumerable<Event> incomingEvents, IEnumerable<Event> outgoingEvents);
+        MergeResult Merge(IReadOnlyList<Event> incomingEvents, IReadOnlyList<Event> outgoingEvents);
     }
 }

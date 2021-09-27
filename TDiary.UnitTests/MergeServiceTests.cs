@@ -1,6 +1,7 @@
 using FluentAssertions;
 using System;
 using System.Collections.Generic;
+using TDiary.Common.Models.Domain;
 using TDiary.Common.Models.Domain.Enums;
 using TDiary.Common.Models.Entities;
 using TDiary.Common.Models.Entities.Enums;
@@ -643,6 +644,114 @@ namespace TDiary.UnitTests
             resolution1.EventResolutionOperation.Should().Be(EventResolutionOperation.UndoAndRemove);
             resolution2.EventResolutionOperation.Should().Be(EventResolutionOperation.Pull);
             resolution3.EventResolutionOperation.Should().Be(EventResolutionOperation.NoOp);
+        }
+
+        [Fact(DisplayName = "Undo resolutions should be in reverse order")]
+        public void UndoResolutionsShouldBeInReverseOrder()
+        {
+            // Arrange
+            var createdAtUtc = DateTime.UtcNow;
+            var outgoing1 = new Event
+            {
+                EventType = EventType.Insert,
+                Data = "data",
+                CreatedAt = DateTime.Now,
+                CreatedAtUtc = createdAtUtc,
+                Entity = "Brand",
+                Id = Guid.NewGuid(),
+                EntityId = Guid.NewGuid(),
+                TimeZone = "timezone",
+                UserId = Guid.NewGuid(),
+                Version = 1
+            };
+            var outgoing2 = new Event
+            {
+                EventType = EventType.Update,
+                Data = "data2",
+                CreatedAt = DateTime.Now,
+                CreatedAtUtc = createdAtUtc.AddDays(1),
+                Entity = "Brand",
+                Id = Guid.NewGuid(),
+                EntityId = Guid.NewGuid(),
+                TimeZone = "timezone",
+                UserId = Guid.NewGuid(),
+                Changes = "changes",
+                Version = 1
+            };
+            var outgoing3 = new Event
+            {
+                EventType = EventType.Delete,
+                Data = "data3",
+                CreatedAt = DateTime.Now,
+                CreatedAtUtc = createdAtUtc.AddDays(2),
+                Entity = "Brand",
+                Id = Guid.NewGuid(),
+                EntityId = Guid.NewGuid(),
+                TimeZone = "timezone",
+                UserId = Guid.NewGuid(),
+                Version = 1
+            };
+            var outgoingEvents = new List<Event>
+            {
+                outgoing1,
+                outgoing2,
+                outgoing3
+            };
+
+            var incomingEvents = new List<Event>
+            {
+                new()
+                {
+                    EventType = EventType.Delete,
+                    Data = "data1",
+                    CreatedAt = DateTime.Now,
+                    CreatedAtUtc = DateTime.UtcNow,
+                    Entity = "Brand",
+                    Id = Guid.NewGuid(),
+                    EntityId = Guid.NewGuid(),
+                    TimeZone = "timezone",
+                    UserId = Guid.NewGuid(),
+                    Version = 1
+                },
+                new()
+                {
+                    EventType = EventType.Delete,
+                    Data = "data2",
+                    CreatedAt = DateTime.Now,
+                    CreatedAtUtc = DateTime.UtcNow,
+                    Entity = "Brand",
+                    Id = Guid.NewGuid(),
+                    EntityId = Guid.NewGuid(),
+                    TimeZone = "timezone",
+                    UserId = Guid.NewGuid(),
+                    Version = 1
+                },
+                new()
+                {
+                    EventType = EventType.Delete,
+                    Data = "data3",
+                    CreatedAt = DateTime.Now,
+                    CreatedAtUtc = DateTime.UtcNow,
+                    Entity = "Brand",
+                    Id = Guid.NewGuid(),
+                    EntityId = Guid.NewGuid(),
+                    TimeZone = "timezone",
+                    UserId = Guid.NewGuid(),
+                    Version = 1
+                },
+            };
+
+            // Act
+            var result = mergeService.Merge(incomingEvents, outgoingEvents);
+
+            // Assert
+            var eventResolutions = result.EventResolutions;
+            var result1 = eventResolutions.Dequeue();
+            var result2 = eventResolutions.Dequeue();
+            var result3 = eventResolutions.Dequeue();
+            var list = new List<EventResolution> { result1, result2, result3 };
+            list.Should().OnlyContain(x => x.EventResolutionOperation == EventResolutionOperation.UndoAndRemove);
+            list.Should().BeInDescendingOrder(x => x.Event.CreatedAtUtc);
         }
     }
 }
