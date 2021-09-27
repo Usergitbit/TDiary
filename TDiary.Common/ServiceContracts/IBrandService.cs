@@ -9,6 +9,8 @@ namespace TDiary.Common.ServiceContracts
     public interface IBrandService
     {
         Task Add(Brand brand);
+        Task Update(Brand brand);
+        Task Delete(Guid brandId);
         Task<List<Brand>> Get(Guid userId);
     }
 }

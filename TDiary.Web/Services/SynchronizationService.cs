@@ -221,7 +221,7 @@ namespace TDiary.Web.Services
             };
             var events = await dbManager.GetAllRecordsByIndex<string, Event>(indexSearch);
 
-            return events.ToList();
+            return events.OrderBy(e => e.CreatedAtUtc).ToList();
         }
     }
 

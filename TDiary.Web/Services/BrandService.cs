@@ -23,6 +23,16 @@ namespace TDiary.Web.Services
             await dbManager.AddRecord(new StoreRecord<Brand> { Storename = StoreNameConstants.Brands, Data = brand });
         }
 
+        public async Task Update(Brand brand)
+        {
+            await dbManager.UpdateRecord(new StoreRecord<Brand> { Storename = StoreNameConstants.Brands, Data = brand });
+        }
+
+        public async Task Delete(Guid brandId)
+        {
+            await dbManager.DeleteRecord(StoreNameConstants.Brands, brandId);
+        }
+
         public async Task<List<Brand>> Get(Guid userId)
         {
             var indexSearch = new StoreIndexQuery<string>
