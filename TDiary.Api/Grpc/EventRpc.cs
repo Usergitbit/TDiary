@@ -103,7 +103,7 @@ namespace TDiary.Api.Grpc
                         Id = eventEntity.Id.ToString(),
                         Version = eventEntity.Version,
                         UserId = eventEntity.UserId.ToString(),
-                        EntityId = eventEntity.EntityId
+                        EntityId = eventEntity.EntityId.ToString()
                     };
 
                     eventDataList.Add(eventData);
