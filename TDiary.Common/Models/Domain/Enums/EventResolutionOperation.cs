@@ -10,22 +10,30 @@ namespace TDiary.Common.Models.Domain.Enums
         /// Add locally and play
         /// </summary>
         Pull,
+
         /// <summary>
-        /// Add locally, play and send to server
+        /// Send to server
         /// </summary>
         Push,
+
         /// <summary>
         /// Undo and remove locally
         /// </summary>
-        UndoAndRemove,
+        Undo,
+
         /// <summary>
         /// Merge changes, play locally, push to server
         /// </summary>
         Merge,
+
         /// <summary>
         /// Nothing is to be done with this event
         /// </summary>
-        NoOp,
-        PushIfValid
+        None,
+
+        /// <summary>
+        /// Validate relationships, add locally, play and send to server
+        /// </summary>
+        PushIfValid,
     }
 }

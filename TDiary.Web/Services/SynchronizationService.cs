@@ -17,7 +17,9 @@ namespace TDiary.Web.Services
 {
     public class SynchronizationService : ISynchronizationService
     {
-        private const string lastSuccesfullSyncDatUtcKey = "lastSuccessfullSyncDateUtc";
+        private const string lastSuccesfullSyncDateUtcKey = "lastSuccessfullSyncDateUtc";
+        private const string fullSyncRequired = "fullSyncRequired";
+        private const string unsynchronizedEventsBackup = "unsynchronizedEventsBackup";
 
         private readonly IndexedDBManager dbManager;
         private readonly IEventPlayerService eventPlayerService;
@@ -60,7 +62,7 @@ namespace TDiary.Web.Services
             List<Event> incomingEvents;
             try
             {
-                incomingEvents = await GetRemoteEvents(userId, lastEventDate);
+                incomingEvents = await GetRemoteEvents(lastEventDate);
             }
             catch (Exception ex)
             {
@@ -68,54 +70,67 @@ namespace TDiary.Web.Services
                 return;
             }
 
-            var unsynchronizedEvents = await GetUnsynchronized(userId);
-
-            // TODO: create downloadable backup of unsynchronized events
-            var mergeResult = mergeService.Merge(incomingEvents, unsynchronizedEvents);
-            while(mergeResult.EventResolutions.TryDequeue(out var eventResolution))
+            // TODO: push all events with a single call - if call fails stop sync
+            // group local changes into one transaction (no support from this indexedDb library currently)
+            // what to do if transaction fails and events already pushed? full sync?
+            try
             {
-                switch (eventResolution.EventResolutionOperation)
+                var unsynchronizedEvents = await GetUnsynchronized(userId);
+                var backupDate = DateTime.UtcNow;
+                await localStorageService.SetItemAsync($"{unsynchronizedEventsBackup}_{backupDate:yyyy-MM-dd-HH-mm-ss}", unsynchronizedEvents);
+                var unsynced = await localStorageService.GetItemAsync<List<Event>>($"{unsynchronizedEventsBackup}_{backupDate:yyyy-MM-dd-HH-mm-ss}");
+                var mergeResult = mergeService.Merge(incomingEvents, unsynchronizedEvents);
+                while (mergeResult.EventResolutions.TryDequeue(out var eventResolution))
                 {
+                    switch (eventResolution.EventResolutionOperation)
+                    {
 
-                    case EventResolutionOperation.UndoAndRemove:
-                        await eventPlayerService.UndoEvent(eventResolution.Event);
-                        await dbManager.DeleteRecord(StoreNameConstants.UnsynchronizedEvents, eventResolution.Event.Id);
-                        break;
-                    case EventResolutionOperation.Pull:
-                        await dbManager.AddRecord(new StoreRecord<Event> 
-                        { 
-                            Storename = StoreNameConstants.Events, 
-                            Data = eventResolution.Event 
-                        });
-                        await eventPlayerService.PlayEvent(eventResolution.Event);
-                        break;
-                    case EventResolutionOperation.Push:
-                        await Push(eventResolution.Event);
-                        break;
-                    case EventResolutionOperation.PushIfValid:
-                        if (await entityRelationsValidator.Validate(eventResolution.Event))
-                        {
+                        case EventResolutionOperation.Undo:
+                            await eventPlayerService.UndoEvent(eventResolution.Event);
+                            await dbManager.DeleteRecord(StoreNameConstants.UnsynchronizedEvents, eventResolution.Event.Id);
+                            break;
+                        case EventResolutionOperation.Pull:
+                            await dbManager.AddRecord(new StoreRecord<Event>
+                            {
+                                Storename = StoreNameConstants.Events,
+                                Data = eventResolution.Event
+                            });
+                            await eventPlayerService.PlayEvent(eventResolution.Event);
+                            break;
+                        case EventResolutionOperation.Push:
                             await Push(eventResolution.Event);
-                        }
-                        break;
-                    case EventResolutionOperation.Merge:
-                        var mergeEvent = updateEventMergerService.Merge(eventResolution.ServerEvent, eventResolution.Event);
-                        await Push(mergeEvent);
-                        await dbManager.AddRecord(new StoreRecord<Event>
-                        {
-                            Storename = StoreNameConstants.Events,
-                            Data = mergeEvent
-                        });
-                        await eventPlayerService.PlayEvent(mergeEvent);
-                        break;
-                    case EventResolutionOperation.NoOp:
-                        break;
-                    default:
-                        throw new NotImplementedException($"Event resolution {eventResolution.EventResolutionOperation} not implemented.");
+                            await dbManager.DeleteRecord(StoreNameConstants.UnsynchronizedEvents, eventResolution.Event.Id);
+                            break;
+                        case EventResolutionOperation.PushIfValid:
+                            if (await entityRelationsValidator.Validate(eventResolution.Event))
+                            {
+                                await Push(eventResolution.Event);
+                            }
+                            break;
+                        case EventResolutionOperation.Merge:
+                            var mergeEvent = updateEventMergerService.Merge(eventResolution.ServerEvent, eventResolution.Event);
+                            await Push(mergeEvent);
+                            await dbManager.AddRecord(new StoreRecord<Event>
+                            {
+                                Storename = StoreNameConstants.Events,
+                                Data = mergeEvent
+                            });
+                            await eventPlayerService.PlayEvent(mergeEvent);
+                            break;
+                        case EventResolutionOperation.None:
+                            break;
+                        default:
+                            throw new NotImplementedException($"Event resolution {eventResolution.EventResolutionOperation} not implemented.");
+                    }
                 }
-            }
 
-            await localStorageService.SetItemAsync(lastSuccesfullSyncDatUtcKey, DateTime.UtcNow);
+                await localStorageService.SetItemAsync(lastSuccesfullSyncDateUtcKey, DateTime.UtcNow);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Critical sync failure: {ex.Message}\n{ex.StackTrace}. Full sync required to recover.");
+                await localStorageService.SetItemAsync(fullSyncRequired, true);
+            }
         }
 
         private async Task Push(Event eventEntity)
@@ -146,23 +161,18 @@ namespace TDiary.Web.Services
                 Data = eventEntity
             });
         }
-        private async Task<List<Event>> GetRemoteEvents(Guid userId, DateTime lastEventDateUtc)
+        private async Task<List<Event>> GetRemoteEvents(DateTime lastEventDateUtc)
         {
-            //sync flow:
-            // if access token OK => start SYNC process => log last sync date
-            // if access token exception => 3. if sts online => go to login
-            //                                 if sts offline => skip and check last sync date to show warning if it was a long time ago
-
             // maybe simpler sync flow:
             // if get remotes events OK => sync
             // if get remote events fails => skip and log reason for failure
             // if the fail is access token related it will get refreshed when navigating to some other page at some point and the sync will run there
 
-
             // repository flow
             // if online => sync
-            // return data from cache
+            // return data from local
 
+            // TODO: fast timing out call to check if server is available?
             var reply = await eventClient.GetEventsAsync(new GetEventsRequest
             {
                 LastEventDateUtc = Timestamp.FromDateTime(lastEventDateUtc.AsUtc())

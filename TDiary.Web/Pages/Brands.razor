@@ -14,8 +14,7 @@
 <button @onclick="Add">Add</button>
 <button @onclick="Get">Get</button>
 
-@foreach (var brand in BrandsList)
-{
+@foreach (var brand in BrandsList) {
     <div>@brand.Name</div>
 }
 
@@ -26,8 +25,7 @@
     protected override async Task OnInitializedAsync()
     {
         var isOnline = await NetworkStateService.IsOnline();
-        if (isOnline)
-        {
+        if (isOnline) {
             var userId = await GetUserId();
             await SynchronizationService.Synchronize(userId);
         }
@@ -39,8 +37,7 @@
         var userId = await GetUserId();
         Brand.UserId = userId;
         Brand.Id = Guid.NewGuid();
-        var addBrandEvent = new Event
-        {
+        var addBrandEvent = new Event {
             CreatedAt = DateTime.Now,
             CreatedAtUtc = DateTime.UtcNow,
             Data = JsonSerializer.Serialize(Brand),
@@ -49,7 +46,8 @@
             Id = Guid.NewGuid(),
             TimeZone = TimeZoneInfo.Local.Id,
             UserId = userId,
-            Version = 1
+            Version = 1,
+            EntityId = Brand.Id
         };
         await EventService.Add(userId, addBrandEvent);
         Brand = new();

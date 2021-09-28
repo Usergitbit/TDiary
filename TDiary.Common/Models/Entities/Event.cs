@@ -13,6 +13,7 @@ namespace TDiary.Common.Models.Entities
         public int Version { get; set; }
         public string Changes { get; set; }
         public string Data { get; set; }
+        public string InitialData { get; set; }
         public Guid EntityId { get; set; }
     }
 }

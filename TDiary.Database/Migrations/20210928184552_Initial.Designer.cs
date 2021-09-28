@@ -10,7 +10,7 @@ using TDiary.Database;
 namespace TDiary.Database.Migrations
 {
     [DbContext(typeof(TDiaryDatabaseContext))]
-    [Migration("20210925003145_Initial")]
+    [Migration("20210928184552_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -18,7 +18,7 @@ namespace TDiary.Database.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
-                .HasAnnotation("ProductVersion", "5.0.7")
+                .HasAnnotation("ProductVersion", "5.0.10")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
             modelBuilder.Entity("TDiary.Common.Models.Entities.Brand", b =>
@@ -199,6 +199,9 @@ namespace TDiary.Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Changes")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
@@ -213,8 +216,14 @@ namespace TDiary.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("uuid");
+
                     b.Property<int>("EventType")
                         .HasColumnType("integer");
+
+                    b.Property<string>("InitialData")
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("ModifiedAtUtc")
                         .HasColumnType("timestamp without time zone");

@@ -231,9 +231,9 @@ namespace TDiary.UnitTests
             var resolution1 = eventResolutions.Dequeue();
             var resolution2 = eventResolutions.Dequeue();
             var resolution3 = eventResolutions.Dequeue();
-            resolution1.EventResolutionOperation.Should().Be(EventResolutionOperation.UndoAndRemove);
-            resolution2.EventResolutionOperation.Should().Be(EventResolutionOperation.UndoAndRemove);
-            resolution3.EventResolutionOperation.Should().Be(EventResolutionOperation.UndoAndRemove);
+            resolution1.EventResolutionOperation.Should().Be(EventResolutionOperation.Undo);
+            resolution2.EventResolutionOperation.Should().Be(EventResolutionOperation.Undo);
+            resolution3.EventResolutionOperation.Should().Be(EventResolutionOperation.Undo);
             var resolution4 = eventResolutions.Dequeue();
             var resolution5 = eventResolutions.Dequeue();
             var resolution6 = eventResolutions.Dequeue();
@@ -347,9 +347,9 @@ namespace TDiary.UnitTests
             var resolution1 = eventResolutions.Dequeue();
             var resolution2 = eventResolutions.Dequeue();
             var resolution3 = eventResolutions.Dequeue();
-            resolution1.EventResolutionOperation.Should().Be(EventResolutionOperation.UndoAndRemove);
-            resolution2.EventResolutionOperation.Should().Be(EventResolutionOperation.UndoAndRemove);
-            resolution3.EventResolutionOperation.Should().Be(EventResolutionOperation.UndoAndRemove);
+            resolution1.EventResolutionOperation.Should().Be(EventResolutionOperation.Undo);
+            resolution2.EventResolutionOperation.Should().Be(EventResolutionOperation.Undo);
+            resolution3.EventResolutionOperation.Should().Be(EventResolutionOperation.Undo);
             var resolution4 = eventResolutions.Dequeue();
             var resolution5 = eventResolutions.Dequeue();
             var resolution6 = eventResolutions.Dequeue();
@@ -463,9 +463,9 @@ namespace TDiary.UnitTests
             var resolution1 = eventResolutions.Dequeue();
             var resolution2 = eventResolutions.Dequeue();
             var resolution3 = eventResolutions.Dequeue();
-            resolution1.EventResolutionOperation.Should().Be(EventResolutionOperation.UndoAndRemove);
-            resolution2.EventResolutionOperation.Should().Be(EventResolutionOperation.UndoAndRemove);
-            resolution3.EventResolutionOperation.Should().Be(EventResolutionOperation.UndoAndRemove);
+            resolution1.EventResolutionOperation.Should().Be(EventResolutionOperation.Undo);
+            resolution2.EventResolutionOperation.Should().Be(EventResolutionOperation.Undo);
+            resolution3.EventResolutionOperation.Should().Be(EventResolutionOperation.Undo);
             var resolution4 = eventResolutions.Dequeue();
             var resolution5 = eventResolutions.Dequeue();
             var resolution6 = eventResolutions.Dequeue();
@@ -530,7 +530,7 @@ namespace TDiary.UnitTests
             var resolution1 = eventResolutions.Dequeue();
             var resolution2 = eventResolutions.Dequeue();
             var resolution3 = eventResolutions.Dequeue();
-            resolution1.EventResolutionOperation.Should().Be(EventResolutionOperation.UndoAndRemove);
+            resolution1.EventResolutionOperation.Should().Be(EventResolutionOperation.Undo);
             resolution2.EventResolutionOperation.Should().Be(EventResolutionOperation.Pull);
             resolution3.EventResolutionOperation.Should().Be(EventResolutionOperation.Merge);
             resolution3.ServerEvent.Should().Be(resolution2.Event);
@@ -586,9 +586,9 @@ namespace TDiary.UnitTests
             var resolution1 = eventResolutions.Dequeue();
             var resolution2 = eventResolutions.Dequeue();
             var resolution3 = eventResolutions.Dequeue();
-            resolution1.EventResolutionOperation.Should().Be(EventResolutionOperation.UndoAndRemove);
+            resolution1.EventResolutionOperation.Should().Be(EventResolutionOperation.Undo);
             resolution2.EventResolutionOperation.Should().Be(EventResolutionOperation.Pull);
-            resolution3.EventResolutionOperation.Should().Be(EventResolutionOperation.NoOp);
+            resolution3.EventResolutionOperation.Should().Be(EventResolutionOperation.None);
         }
 
         [Fact(DisplayName = "Incoming delete outgoing update to the same entity")]
@@ -641,9 +641,9 @@ namespace TDiary.UnitTests
             var resolution1 = eventResolutions.Dequeue();
             var resolution2 = eventResolutions.Dequeue();
             var resolution3 = eventResolutions.Dequeue();
-            resolution1.EventResolutionOperation.Should().Be(EventResolutionOperation.UndoAndRemove);
+            resolution1.EventResolutionOperation.Should().Be(EventResolutionOperation.Undo);
             resolution2.EventResolutionOperation.Should().Be(EventResolutionOperation.Pull);
-            resolution3.EventResolutionOperation.Should().Be(EventResolutionOperation.NoOp);
+            resolution3.EventResolutionOperation.Should().Be(EventResolutionOperation.None);
         }
 
         [Fact(DisplayName = "Undo resolutions should be in reverse order")]
@@ -750,7 +750,7 @@ namespace TDiary.UnitTests
             var result2 = eventResolutions.Dequeue();
             var result3 = eventResolutions.Dequeue();
             var list = new List<EventResolution> { result1, result2, result3 };
-            list.Should().OnlyContain(x => x.EventResolutionOperation == EventResolutionOperation.UndoAndRemove);
+            list.Should().OnlyContain(x => x.EventResolutionOperation == EventResolutionOperation.Undo);
             list.Should().BeInDescendingOrder(x => x.Event.CreatedAtUtc);
         }
     }

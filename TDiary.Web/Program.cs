@@ -15,6 +15,7 @@ using TDiary.Web.IndexedDB.SchemaBuilder;
 using TDiary.Common.Models.Entities;
 using TDiary.Web.IndexedDB;
 using TDiary.Web.Services.Interfaces;
+using TDiary.Common.ServiceContracts.Implementations;
 
 namespace TDiary.Web
 {
@@ -62,11 +63,12 @@ namespace TDiary.Web
             builder.Services.AddScoped<ISynchronizationService, SynchronizationService>();
             builder.Services.AddScoped<IUpdateEventMergerService, UpdateEventMergerService>();
             builder.Services.AddScoped<IEntityRelationsValidatorService, EntityRelationsValidatorService>();
+            builder.Services.AddSingleton<IMergeService, MergeService>();
 
 
             builder.Services.AddIndexedDB(dbStore =>
             {
-                dbStore.DbName = "TDiary"; 
+                dbStore.DbName = "TDiary";
                 //todo: get from somewhere to do comparisons for recreation
                 dbStore.Version = 1;
 
@@ -77,6 +79,9 @@ namespace TDiary.Web
                     .Property("eventType")
                     .Property("version")
                     .Property("data")
+                    .Property("entityId")
+                    .Property("initialData")
+                    .Property("changes")
                     .Build();
 
                 var unsynchronizedEventsSchema = new SchemaBuilder<Event>()
@@ -86,6 +91,9 @@ namespace TDiary.Web
                     .Property("eventType")
                     .Property("version")
                     .Property("data")
+                    .Property("entityId")
+                    .Property("initialData")
+                    .Property("changes")
                     .Build();
 
                 var brandsSchema = new SchemaBuilder<Brand>()

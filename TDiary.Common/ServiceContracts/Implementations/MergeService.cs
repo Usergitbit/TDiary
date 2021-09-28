@@ -44,7 +44,7 @@ namespace TDiary.Common.ServiceContracts.Implementations
                 var eventResolution = new EventResolution
                 {
                     Event = outgoingEvent,
-                    EventResolutionOperation = EventResolutionOperation.UndoAndRemove,
+                    EventResolutionOperation = EventResolutionOperation.Undo,
                     Reason = "Undo all local events before playing remote events."
                 };
                 eventResolutions.Enqueue(eventResolution);
@@ -65,9 +65,9 @@ namespace TDiary.Common.ServiceContracts.Implementations
             return eventResolutions;
         }
 
-        private IncomingEventResolutionState ResolveRemoteEvents(IReadOnlyList<Event> incomingEvents)
+        private IncomingEventsResolutionState ResolveRemoteEvents(IReadOnlyList<Event> incomingEvents)
         {
-            var result = new IncomingEventResolutionState();
+            var result = new IncomingEventsResolutionState();
             foreach (var incomingEvent in incomingEvents)
             {
                 result.EventResolutions.Add(new EventResolution
@@ -107,7 +107,7 @@ namespace TDiary.Common.ServiceContracts.Implementations
             return result;
         }
 
-        private IEnumerable<EventResolution> ReconcileLocalEvents(IncomingEventResolutionState incomingEventResolutionState, IReadOnlyList<Event> outgoingEvents)
+        private IEnumerable<EventResolution> ReconcileLocalEvents(IncomingEventsResolutionState incomingEventResolutionState, IReadOnlyList<Event> outgoingEvents)
         {
             var result = new List<EventResolution>();
             foreach (var outgoingEvent in outgoingEvents)
@@ -132,12 +132,12 @@ namespace TDiary.Common.ServiceContracts.Implementations
             return result;
         }
 
-        private EventResolution ReconcileLocalEvent(Event outgoingEvent, IncomingEventResolutionState incomingEventResolutionState)
+        private EventResolution ReconcileLocalEvent(Event outgoingEvent, IncomingEventsResolutionState incomingEventResolutionState)
         {
             var eventResolution = new EventResolution
             {
                 Event = outgoingEvent,
-                EventResolutionOperation = EventResolutionOperation.NoOp,
+                EventResolutionOperation = EventResolutionOperation.None,
                 Reason = $"Could not determine course of action for event type {outgoingEvent.EventType} with id {outgoingEvent.Id}, entity {outgoingEvent.Entity} with entityId {outgoingEvent.EntityId}"
             };
 
@@ -160,7 +160,7 @@ namespace TDiary.Common.ServiceContracts.Implementations
                         eventResolution = new EventResolution
                         {
                             Event = outgoingEvent,
-                            EventResolutionOperation = EventResolutionOperation.NoOp,
+                            EventResolutionOperation = EventResolutionOperation.None,
                             Reason = "Entity was updated on the server at a later date than it was deleted locally, no change will be performed."
                         };
                     }
@@ -169,7 +169,7 @@ namespace TDiary.Common.ServiceContracts.Implementations
                     eventResolution = new EventResolution
                     {
                         Event = outgoingEvent,
-                        EventResolutionOperation = EventResolutionOperation.NoOp,
+                        EventResolutionOperation = EventResolutionOperation.None,
                         Reason = $"Entity was deleted on the server, local event type {outgoingEvent.EventType} will be dropped.",
                     };
                     break;

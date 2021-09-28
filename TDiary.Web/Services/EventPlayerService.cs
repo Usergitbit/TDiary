@@ -51,7 +51,9 @@ namespace TDiary.Web.Services
                     await brandService.Delete(eventEntity.EntityId);
                     break;
                 case EventType.Update:
-                    throw new NotImplementedException("Can't undo update without initial data.");
+                    brand = JsonSerializer.Deserialize<Brand>(eventEntity.InitialData);
+                    await brandService.Update(brand);
+                    break;
                 case EventType.Delete:
                     brand = JsonSerializer.Deserialize<Brand>(eventEntity.Data);
                     brand.CreatedAt = DateTime.Now;
@@ -73,6 +75,7 @@ namespace TDiary.Web.Services
                     brand = JsonSerializer.Deserialize<Brand>(eventEntity.Data);
                     brand.CreatedAt = DateTime.Now;
                     brand.CreatedAtUtc = DateTime.UtcNow;
+                    //TODO: timezone for creation and modification?
                     brand.TimeZone = TimeZoneInfo.Local.Id;
                     await brandService.Add(brand);
                     break;
@@ -88,7 +91,6 @@ namespace TDiary.Web.Services
                 default:
                     throw new NotImplementedException($"Play for event type {eventEntity.EventType} entity {eventEntity.Entity} not implemented.");
             }
-
         }
     }
 }
