@@ -137,6 +137,7 @@ namespace TDiary.Web.Services
         {
             await eventClient.AddEventAsync(new AddEventRequest
             {
+                //TODO: some kind of factory for this
                 EventData = new EventData
                 {
                     AuditData = new AuditData
@@ -152,7 +153,8 @@ namespace TDiary.Web.Services
                     EventType = (EventType)eventEntity.EventType,
                     Id = eventEntity.Id.ToString(),
                     UserId = eventEntity.UserId.ToString(),
-                    Version = eventEntity.Version
+                    Version = eventEntity.Version,
+                    EntityId = eventEntity.EntityId.ToString()
                 }
             });
             await dbManager.AddRecord(new StoreRecord<Event>
@@ -193,7 +195,8 @@ namespace TDiary.Web.Services
                     ModifiedtAt = eventData.AuditData.ModifiedAt.ToNullMinimumDateTime(),
                     ModifiedAtUtc = eventData.AuditData.ModifiedAtUtc.ToNullMinimumDateTime(),
                     TimeZone = eventData.AuditData.TimeZone,
-                    Version = eventData.Version
+                    Version = eventData.Version,
+                    EntityId = Guid.Parse(eventData.EntityId)
                 };
 
                 events.Add(eventEntity);

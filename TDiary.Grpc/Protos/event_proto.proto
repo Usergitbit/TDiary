@@ -48,6 +48,7 @@ message EventData {
   string data = 6;
   AuditData audit_data = 7;
   string user_id = 8;
+  string entityId = 9;
 }
 
 message AuditData {

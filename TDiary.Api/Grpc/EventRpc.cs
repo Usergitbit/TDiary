@@ -55,7 +55,8 @@ namespace TDiary.Api.Grpc
                     ModifiedAtUtc = request.EventData.AuditData.ModifiedAtUtc.ToNullMinimumDateTime(),
                     TimeZone = request.EventData.AuditData.TimeZone,
                     UserId = userId,
-                    Version = request.EventData.Version
+                    Version = request.EventData.Version,
+                    EntityId = Guid.Parse(request.EventData.EntityId)
                 };
                 await eventService.Add(userId, eventEntity);
 
@@ -101,7 +102,8 @@ namespace TDiary.Api.Grpc
                         EventType = (EventType)eventEntity.EventType,
                         Id = eventEntity.Id.ToString(),
                         Version = eventEntity.Version,
-                        UserId = eventEntity.UserId.ToString()
+                        UserId = eventEntity.UserId.ToString(),
+                        EntityId = eventEntity.EntityId
                     };
 
                     eventDataList.Add(eventData);
