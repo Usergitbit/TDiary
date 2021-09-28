@@ -1,7 +1,7 @@
 ﻿@page "/brands"
 @attribute [Authorize]
 @inject IEventService EventService
-@inject IBrandService BrandService
+@inject IEntityQueryService EntityQueryService
 @inject AuthenticationStateProvider authenticationStateProvider
 @inject NetworkStateService NetworkStateService
 @inject ISynchronizationService SynchronizationService
@@ -58,7 +58,7 @@
     {
 
         var userId = await GetUserId();
-        var result = await BrandService.Get(userId);
+        var result = await EntityQueryService.GetBrands(userId);
         BrandsList = new List<Brand>(result);
     }
 

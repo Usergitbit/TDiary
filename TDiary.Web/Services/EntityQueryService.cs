@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,30 +9,15 @@ using TG.Blazor.IndexedDB;
 
 namespace TDiary.Web.Services
 {
-    public class BrandService : IBrandService
+    public class EntityQueryService : IEntityQueryService
     {
         private readonly IndexedDBManager dbManager;
 
-        public BrandService(IndexedDBManager dbManager)
+        public EntityQueryService(IndexedDBManager dbManager)
         {
             this.dbManager = dbManager;
         }
-        public async Task Add(Brand brand)
-        {
-            await dbManager.AddRecord(new StoreRecord<Brand> { Storename = StoreNameConstants.Brands, Data = brand });
-        }
-
-        public async Task Update(Brand brand)
-        {
-            await dbManager.UpdateRecord(new StoreRecord<Brand> { Storename = StoreNameConstants.Brands, Data = brand });
-        }
-
-        public async Task Delete(Guid brandId)
-        {
-            await dbManager.DeleteRecord(StoreNameConstants.Brands, brandId);
-        }
-
-        public async Task<List<Brand>> Get(Guid userId)
+        public async Task<List<Brand>> GetBrands(Guid userId)
         {
             var indexSearch = new StoreIndexQuery<string>
             {

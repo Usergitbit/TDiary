@@ -6,16 +6,18 @@ using System.Threading.Tasks;
 using TDiary.Common.Models.Entities;
 using TDiary.Common.Models.Entities.Enums;
 using TDiary.Common.ServiceContracts;
+using TDiary.Web.IndexedDB;
+using TG.Blazor.IndexedDB;
 
 namespace TDiary.Web.Services
 {
     public class EventPlayerService : IEventPlayerService
     {
-        private readonly IBrandService brandService;
+        private readonly IndexedDBManager dbManager;
 
-        public EventPlayerService(IBrandService brandService)
+        public EventPlayerService(IndexedDBManager dbManager)
         {
-            this.brandService = brandService;
+            this.dbManager = dbManager;
         }
 
         public async Task PlayEvent(Event eventEntity)
@@ -48,21 +50,21 @@ namespace TDiary.Web.Services
             switch (eventEntity.EventType)
             {
                 case EventType.Insert:
-                    await brandService.Delete(eventEntity.EntityId);
+                    await dbManager.DeleteRecord(StoreNameConstants.Brands, eventEntity.EntityId);
                     break;
                 case EventType.Update:
                     brand = JsonSerializer.Deserialize<Brand>(eventEntity.InitialData);
-                    await brandService.Update(brand);
+                    await dbManager.UpdateRecord(new StoreRecord<Brand> { Storename = StoreNameConstants.Brands, Data = brand });
                     break;
                 case EventType.Delete:
                     brand = JsonSerializer.Deserialize<Brand>(eventEntity.Data);
                     brand.CreatedAt = DateTime.Now;
                     brand.CreatedAtUtc = DateTime.UtcNow;
                     brand.TimeZone = TimeZoneInfo.Local.Id;
-                    await brandService.Add(brand);
+                    await dbManager.AddRecord(new StoreRecord<Brand> { Storename = StoreNameConstants.Brands, Data = brand });
                     break;
                 default:
-                    throw new NotImplementedException($"Play for event type {eventEntity.EventType} entity {eventEntity.Entity} not implemented.");
+                    throw new NotImplementedException($"Undo for event type {eventEntity.EventType} entity {eventEntity.Entity} not implemented.");
             }
         }
 
@@ -77,16 +79,16 @@ namespace TDiary.Web.Services
                     brand.CreatedAtUtc = DateTime.UtcNow;
                     //TODO: timezone for creation and modification?
                     brand.TimeZone = TimeZoneInfo.Local.Id;
-                    await brandService.Add(brand);
+                    await dbManager.AddRecord(new StoreRecord<Brand> { Storename = StoreNameConstants.Brands, Data = brand });
                     break;
                 case EventType.Update:
                     brand = JsonSerializer.Deserialize<Brand>(eventEntity.Data);
                     brand.ModifiedtAt = DateTime.Now;
                     brand.ModifiedAtUtc = DateTime.UtcNow;
-                    await brandService.Update(brand);
+                    await dbManager.UpdateRecord(new StoreRecord<Brand> { Storename = StoreNameConstants.Brands, Data = brand });
                     break;
                 case EventType.Delete:
-                    await brandService.Delete(eventEntity.EntityId);
+                    await dbManager.DeleteRecord(StoreNameConstants.Brands, eventEntity.EntityId);
                     break;
                 default:
                     throw new NotImplementedException($"Play for event type {eventEntity.EventType} entity {eventEntity.Entity} not implemented.");

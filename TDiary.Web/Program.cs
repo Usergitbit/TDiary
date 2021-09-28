@@ -56,13 +56,13 @@ namespace TDiary.Web
                 return new GrpcWebHandler(GrpcWebMode.GrpcWeb, handler);
             });
 
-            builder.Services.AddScoped<IEventService, EventService>();
-            builder.Services.AddScoped<IBrandService, BrandService>();
-            builder.Services.AddScoped<IEventPlayerService, EventPlayerService>();
+            builder.Services.AddSingleton<IEventService, EventService>();
+            builder.Services.AddSingleton<IEntityQueryService, EntityQueryService>();
+            builder.Services.AddSingleton<IEventPlayerService, EventPlayerService>();
             builder.Services.AddSingleton<NetworkStateService>();
-            builder.Services.AddScoped<ISynchronizationService, SynchronizationService>();
-            builder.Services.AddScoped<IUpdateEventMergerService, UpdateEventMergerService>();
-            builder.Services.AddScoped<IEntityRelationsValidatorService, EntityRelationsValidatorService>();
+            builder.Services.AddSingleton<ISynchronizationService, SynchronizationService>();
+            builder.Services.AddSingleton<IUpdateEventMergerService, UpdateEventMergerService>();
+            builder.Services.AddSingleton<IEntityRelationsValidatorService, EntityRelationsValidatorService>();
             builder.Services.AddSingleton<IMergeService, MergeService>();
 
 

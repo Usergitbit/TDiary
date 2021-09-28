@@ -6,11 +6,8 @@ using TDiary.Common.Models.Entities;
 
 namespace TDiary.Common.ServiceContracts
 {
-    public interface IBrandService
+    public interface IEntityQueryService
     {
-        Task Add(Brand brand);
-        Task Update(Brand brand);
-        Task Delete(Guid brandId);
-        Task<List<Brand>> Get(Guid userId);
+        Task<List<Brand>> GetBrands(Guid userId);
     }
 }
