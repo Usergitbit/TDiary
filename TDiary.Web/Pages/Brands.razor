@@ -6,28 +6,37 @@
 @inject NetworkStateService NetworkStateService
 @inject ISynchronizationService SynchronizationService
 
-<h3>Brands</h3>
-<EditForm Model="Brand">
-    <InputText @bind-Value="Brand.Name" />
-</EditForm>
+@if (!IsBusy) {
 
-<button @onclick="Add">Add</button>
-<button @onclick="Get">Get</button>
+    <h3>Brands</h3>
+    <EditForm Model="Brand">
+        <InputText @bind-Value="Brand.Name" />
+    </EditForm>
 
-@foreach (var brand in BrandsList) {
-    <div>@brand.Name</div>
+    <button @onclick="Add">Add</button>
+    <button @onclick="Get">Get</button>
+
+    @foreach (var brand in BrandsList) {
+        <div>@brand.Name</div>
+    }
+}
+else {
+    <h3>Busy</h3>
 }
 
 @code {
     public Brand Brand { get; set; } = new();
     public List<Brand> BrandsList { get; set; } = new List<Brand>();
+    public bool IsBusy { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         var isOnline = await NetworkStateService.IsOnline();
         if (isOnline) {
             var userId = await GetUserId();
+            IsBusy = true;
             await SynchronizationService.Synchronize(userId);
+            IsBusy = false;
         }
         await Get();
     }

@@ -56,13 +56,26 @@ namespace TDiary.Web
                 return new GrpcWebHandler(GrpcWebMode.GrpcWeb, handler);
             });
 
-            builder.Services.AddSingleton<IEventService, EventService>();
-            builder.Services.AddSingleton<IEntityQueryService, EntityQueryService>();
-            builder.Services.AddSingleton<IEventPlayerService, EventPlayerService>();
+            builder.Services.AddGrpcClient<PingProto.PingProtoClient>(o =>
+            {
+                o.Address = new Uri("https://localhost:5002");
+            }).ConfigurePrimaryHttpMessageHandler(() =>
+            {
+                var grcpWebHandler = new GrpcWebHandler(GrpcWebMode.GrpcWeb);
+                grcpWebHandler.InnerHandler = new HttpClientHandler();
+
+                return grcpWebHandler;
+            });
+
+            // scoped doesn't do anything and functions as single but the indexDb library registers itself as scoped 
+            // so we need to make anything that uses it scoped as well
+            builder.Services.AddScoped<IEventService, EventService>();
+            builder.Services.AddScoped<IEntityQueryService, EntityQueryService>();
+            builder.Services.AddScoped<IEventPlayerService, EventPlayerService>();
             builder.Services.AddSingleton<NetworkStateService>();
-            builder.Services.AddSingleton<ISynchronizationService, SynchronizationService>();
+            builder.Services.AddScoped<ISynchronizationService, SynchronizationService>();
             builder.Services.AddSingleton<IUpdateEventMergerService, UpdateEventMergerService>();
-            builder.Services.AddSingleton<IEntityRelationsValidatorService, EntityRelationsValidatorService>();
+            builder.Services.AddScoped<IEntityRelationsValidatorService, EntityRelationsValidatorService>();
             builder.Services.AddSingleton<IMergeService, MergeService>();
 
 

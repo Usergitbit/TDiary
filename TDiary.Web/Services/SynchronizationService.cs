@@ -12,6 +12,7 @@ using TG.Blazor.IndexedDB;
 using TDiary.Common.Extensions;
 using TDiary.Common.Models.Domain.Enums;
 using TDiary.Web.Services.Interfaces;
+using Grpc.Core;
 
 namespace TDiary.Web.Services
 {
@@ -28,6 +29,7 @@ namespace TDiary.Web.Services
         private readonly IMergeService mergeService;
         private readonly IEntityRelationsValidatorService entityRelationsValidator;
         private readonly IUpdateEventMergerService updateEventMergerService;
+        private readonly PingProto.PingProtoClient pingClient;
 
         public SynchronizationService(IndexedDBManager dbManager,
             IEventPlayerService eventPlayerService,
@@ -35,7 +37,8 @@ namespace TDiary.Web.Services
             ILocalStorageService localStorageService,
             IMergeService mergeService,
             IEntityRelationsValidatorService entityRelationsValidator,
-            IUpdateEventMergerService updateEventMergerService)
+            IUpdateEventMergerService updateEventMergerService,
+            PingProto.PingProtoClient pingClient)
         {
             this.dbManager = dbManager;
             this.eventPlayerService = eventPlayerService;
@@ -44,10 +47,21 @@ namespace TDiary.Web.Services
             this.mergeService = mergeService;
             this.entityRelationsValidator = entityRelationsValidator;
             this.updateEventMergerService = updateEventMergerService;
+            this.pingClient = pingClient;
         }
 
         public async Task Synchronize(Guid userId)
         {
+            try
+            {
+                await pingClient.PingAsync(new PingRequest(), deadline: DateTime.UtcNow.AddSeconds(0.5));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Aborting sync. Api is not available: {ex.Message}\n{ex.StackTrace}");
+                return;
+            }
+
             DateTime lastEventDate;
             try
             {
@@ -174,7 +188,6 @@ namespace TDiary.Web.Services
             // if online => sync
             // return data from local
 
-            // TODO: fast timing out call to check if server is available?
             var reply = await eventClient.GetEventsAsync(new GetEventsRequest
             {
                 LastEventDateUtc = Timestamp.FromDateTime(lastEventDateUtc.AsUtc())

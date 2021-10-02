@@ -14,11 +14,19 @@ namespace TDiary.Api.Validators
 
             var idValidationMessages = new List<string>();
             if (!Guid.TryParse(eventData.Id, out var id))
-                idValidationMessages.Add("Could not parse string into Guid.");
+                idValidationMessages.Add("Could not parse event id string into Guid.");
             if(id == Guid.Empty)
                 idValidationMessages.Add("Id can not be empty.");
             if (idValidationMessages.Any())
                 propertyValidationFailuresInternal.Add(nameof(EventData.Id), idValidationMessages);
+
+            var entityIdValidationMessages = new List<string>();
+            if (!Guid.TryParse(eventData.EntityId, out var entityId))
+                entityIdValidationMessages.Add("Could not parse entity id string into Guid.");
+            if (entityId == Guid.Empty)
+                entityIdValidationMessages.Add("Entity id can not be empty");
+            if (entityIdValidationMessages.Any())
+                propertyValidationFailuresInternal.Add(nameof(EventData.EntityId), entityIdValidationMessages);
 
             if (eventData.AuditData == null)
                 propertyValidationFailuresInternal.Add(nameof(EventData.AuditData), new List<string> { "AuditData can not be empty." });

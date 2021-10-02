@@ -134,6 +134,7 @@ namespace TDiary.Api
             {
                 endpoints.MapControllers();
                 endpoints.MapGrpcService<EventRpc>().EnableGrpcWeb().RequireCors("TDiary");
+                endpoints.MapGrpcService<PingRpc>().EnableGrpcWeb().RequireCors("TDiary");
                 if (env.IsDevelopment())
                 {
                     endpoints.MapGrpcReflectionService();
