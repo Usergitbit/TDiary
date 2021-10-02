@@ -1,7 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Grpc.Core;
-using Microsoft.AspNetCore.Components.Authorization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -12,7 +9,7 @@ using TDiary.Grpc.Protos;
 using TDiary.Web.IndexedDB;
 using TDiary.Web.Services.Interfaces;
 using TG.Blazor.IndexedDB;
-using TDiary.Common.Extensions;
+using TDiary.Grpc.ServiceContracts;
 
 namespace TDiary.Web.Services
 {
@@ -22,50 +19,42 @@ namespace TDiary.Web.Services
         private readonly NetworkStateService networkStateService;
         private readonly IndexedDBManager dbManager;
         private readonly IEventPlayerService eventPlayerService;
+        private readonly IManualGrpcMapper manualGrpcMapper;
 
         public EventService(EventProto.EventProtoClient eventClient,
             NetworkStateService networkStateService,
             IndexedDBManager dbManager,
-            IEventPlayerService eventPlayerService)
+            IEventPlayerService eventPlayerService,
+            IManualGrpcMapper manualGrpcMapper)
         {
             this.eventClient = eventClient;
             this.networkStateService = networkStateService;
             this.dbManager = dbManager;
             this.eventPlayerService = eventPlayerService;
+            this.manualGrpcMapper = manualGrpcMapper;
         }
 
-        public async Task Add(Guid userId, Event eventEntity)
+        public async Task Add(Event eventEntity)
         {
             var isOnline = await networkStateService.IsOnline();
-            // TODO: check if token valid, if not valid then get from sts somehow
-            // if sts offline then don't call api
             if (isOnline)
             {
                 try
                 {
-                    var eventData = new EventData
-                    {
-                        Data = eventEntity.Data,
-                        Entity = eventEntity.Entity,
-                        EventType = (EventType)eventEntity.EventType,
-                        Id = eventEntity.Id.ToString(),
-                        UserId = eventEntity.UserId.ToString(),
-                        Version = eventEntity.Version,
-                        AuditData = new AuditData
-                        {
-                            CreatedAt = Timestamp.FromDateTime(eventEntity.CreatedAt.AsUtc()),
-                            CreatedAtUtc = Timestamp.FromDateTime(eventEntity.CreatedAtUtc.AsUtc()),
-                            ModifiedAt = Timestamp.FromDateTime(eventEntity.ModifiedtAt.AsUtcNullMinimum()),
-                            ModifiedAtUtc = Timestamp.FromDateTime(eventEntity.ModifiedAtUtc.AsUtcNullMinimum()),
-                            TimeZone = eventEntity.TimeZone
-                        }
-                    };
-
+                    var eventData = manualGrpcMapper.Map(eventEntity);
                     var reply = await eventClient.AddEventAsync(new AddEventRequest
                     {
                         EventData = eventData
                     });
-                    await dbManager.AddRecord(new StoreRecord<Event> { Storename = StoreNameConstants.Events, Data = eventEntity });
+
+                    if (reply.ResultCase == AddEventReply.ResultOneofCase.ErrorInfo)
+                    {
+                        throw new Exception(reply.ErrorInfo.Reason);
+                    }
+                    else
+                    {
+                        await dbManager.AddRecord(new StoreRecord<Event> { Storename = StoreNameConstants.Events, Data = eventEntity });
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -75,7 +64,11 @@ namespace TDiary.Web.Services
             }
             else
             {
-                await dbManager.AddRecord(new StoreRecord<Event> { Storename = StoreNameConstants.UnsynchronizedEvents, Data = eventEntity });
+                await dbManager.AddRecord(new StoreRecord<Event>
+                {
+                    Storename = StoreNameConstants.UnsynchronizedEvents,
+                    Data = eventEntity
+                });
             }
             await eventPlayerService.PlayEvent(eventEntity);
         }

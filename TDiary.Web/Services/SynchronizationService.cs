@@ -13,6 +13,7 @@ using TDiary.Common.Extensions;
 using TDiary.Common.Models.Domain.Enums;
 using TDiary.Web.Services.Interfaces;
 using Grpc.Core;
+using TDiary.Grpc.ServiceContracts;
 
 namespace TDiary.Web.Services
 {
@@ -30,6 +31,7 @@ namespace TDiary.Web.Services
         private readonly IEntityRelationsValidatorService entityRelationsValidator;
         private readonly IUpdateEventMergerService updateEventMergerService;
         private readonly PingProto.PingProtoClient pingClient;
+        private readonly IManualGrpcMapper manualGrpcMapper;
 
         public SynchronizationService(IndexedDBManager dbManager,
             IEventPlayerService eventPlayerService,
@@ -38,7 +40,8 @@ namespace TDiary.Web.Services
             IMergeService mergeService,
             IEntityRelationsValidatorService entityRelationsValidator,
             IUpdateEventMergerService updateEventMergerService,
-            PingProto.PingProtoClient pingClient)
+            PingProto.PingProtoClient pingClient,
+            IManualGrpcMapper manualGrpcMapper)
         {
             this.dbManager = dbManager;
             this.eventPlayerService = eventPlayerService;
@@ -48,6 +51,7 @@ namespace TDiary.Web.Services
             this.entityRelationsValidator = entityRelationsValidator;
             this.updateEventMergerService = updateEventMergerService;
             this.pingClient = pingClient;
+            this.manualGrpcMapper = manualGrpcMapper;
         }
 
         public async Task Synchronize(Guid userId)
@@ -149,28 +153,12 @@ namespace TDiary.Web.Services
 
         private async Task Push(Event eventEntity)
         {
+            var eventData = manualGrpcMapper.Map(eventEntity);
             await eventClient.AddEventAsync(new AddEventRequest
             {
-                //TODO: some kind of factory for this
-                EventData = new EventData
-                {
-                    AuditData = new AuditData
-                    {
-                        CreatedAt = Timestamp.FromDateTime(eventEntity.CreatedAt.AsUtc()),
-                        CreatedAtUtc = Timestamp.FromDateTime(eventEntity.CreatedAtUtc.AsUtc()),
-                        ModifiedAt = Timestamp.FromDateTime(eventEntity.ModifiedtAt.AsUtcNullMinimum()),
-                        ModifiedAtUtc = Timestamp.FromDateTime(eventEntity.ModifiedAtUtc.AsUtcNullMinimum()),
-                        TimeZone = eventEntity.TimeZone
-                    },
-                    Data = eventEntity.Data,
-                    Entity = eventEntity.Entity,
-                    EventType = (EventType)eventEntity.EventType,
-                    Id = eventEntity.Id.ToString(),
-                    UserId = eventEntity.UserId.ToString(),
-                    Version = eventEntity.Version,
-                    EntityId = eventEntity.EntityId.ToString()
-                }
+                EventData = eventData
             });
+
             await dbManager.AddRecord(new StoreRecord<Event>
             {
                 Storename = StoreNameConstants.Events,
@@ -196,22 +184,7 @@ namespace TDiary.Web.Services
             var events = new List<Event>(); 
             foreach(var eventData in reply.EventData)
             {
-                var eventEntity = new Event
-                {
-                    UserId = Guid.Parse(eventData.UserId),
-                    CreatedAt = eventData.AuditData.CreatedAt.ToDateTime(),
-                    CreatedAtUtc = eventData.AuditData.CreatedAtUtc.ToDateTime(),
-                    Data = eventData.Data,
-                    Entity = eventData.Entity,
-                    EventType = (Common.Models.Entities.Enums.EventType)eventData.EventType,
-                    Id = Guid.Parse(eventData.Id),
-                    ModifiedtAt = eventData.AuditData.ModifiedAt.ToNullMinimumDateTime(),
-                    ModifiedAtUtc = eventData.AuditData.ModifiedAtUtc.ToNullMinimumDateTime(),
-                    TimeZone = eventData.AuditData.TimeZone,
-                    Version = eventData.Version,
-                    EntityId = Guid.Parse(eventData.EntityId)
-                };
-
+                var eventEntity = manualGrpcMapper.Map(eventData);
                 events.Add(eventEntity);
             }
 

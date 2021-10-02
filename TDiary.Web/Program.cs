@@ -16,6 +16,8 @@ using TDiary.Common.Models.Entities;
 using TDiary.Web.IndexedDB;
 using TDiary.Web.Services.Interfaces;
 using TDiary.Common.ServiceContracts.Implementations;
+using TDiary.Grpc.ServiceContracts;
+using TDiary.Grpc.ServiceContracts.Implementations;
 
 namespace TDiary.Web
 {
@@ -77,6 +79,7 @@ namespace TDiary.Web
             builder.Services.AddSingleton<IUpdateEventMergerService, UpdateEventMergerService>();
             builder.Services.AddScoped<IEntityRelationsValidatorService, EntityRelationsValidatorService>();
             builder.Services.AddSingleton<IMergeService, MergeService>();
+            builder.Services.AddSingleton<IManualGrpcMapper, ManualGrpcMapper>();
 
 
             builder.Services.AddIndexedDB(dbStore =>

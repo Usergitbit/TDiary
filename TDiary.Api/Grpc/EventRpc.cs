@@ -14,6 +14,7 @@ using TDiary.Common.Exceptions;
 using TDiary.Grpc.Protos;
 using TDiary.Api.Services.Interfaces;
 using Google.Protobuf.WellKnownTypes;
+using TDiary.Grpc.ServiceContracts;
 
 namespace TDiary.Api.Grpc
 {
@@ -23,12 +24,17 @@ namespace TDiary.Api.Grpc
         private readonly ILogger<EventRpc> logger;
         private readonly IEventService eventService;
         private readonly EventValidator eventValidator;
+        private readonly IManualGrpcMapper manualGrpcMapper;
 
-        public EventRpc(ILogger<EventRpc> logger, IEventService eventService, EventValidator eventValidator)
+        public EventRpc(ILogger<EventRpc> logger, 
+            IEventService eventService, 
+            EventValidator eventValidator,
+            IManualGrpcMapper manualGrpcMapper)
         {
             this.logger = logger;
             this.eventService = eventService;
             this.eventValidator = eventValidator;
+            this.manualGrpcMapper = manualGrpcMapper;
         }
 
         public override async Task<AddEventReply> AddEvent(AddEventRequest request, ServerCallContext context)
@@ -43,21 +49,13 @@ namespace TDiary.Api.Grpc
                 }
 
                 var userId = context.GetUserId();
-                var eventEntity = new Event
+                var eventEntity = manualGrpcMapper.Map(request.EventData);
+                if(eventEntity.UserId != userId)
                 {
-                    Id = Guid.Parse(request.EventData.Id),
-                    CreatedAt = request.EventData.AuditData.CreatedAt.ToDateTime(),
-                    CreatedAtUtc = request.EventData.AuditData.CreatedAtUtc.ToDateTime(),
-                    Data = request.EventData.Data,
-                    Entity = request.EventData.Entity,
-                    EventType = (Common.Models.Entities.Enums.EventType)request.EventData.EventType,
-                    ModifiedtAt = request.EventData.AuditData.ModifiedAt.ToNullMinimumDateTime(),
-                    ModifiedAtUtc = request.EventData.AuditData.ModifiedAtUtc.ToNullMinimumDateTime(),
-                    TimeZone = request.EventData.AuditData.TimeZone,
-                    UserId = userId,
-                    Version = request.EventData.Version,
-                    EntityId = Guid.Parse(request.EventData.EntityId)
-                };
+                    // TODO: what to do if an event is sent for a different user?
+                }
+                else
+
                 await eventService.Add(userId, eventEntity);
 
                 return new AddEventReply();
@@ -87,25 +85,7 @@ namespace TDiary.Api.Grpc
                 var eventDataList = new List<EventData>();
                 foreach (var eventEntity in events)
                 {
-                    var eventData = new EventData
-                    {
-                        AuditData = new AuditData
-                        {
-                            CreatedAt = Timestamp.FromDateTime(eventEntity.CreatedAt.AsUtc()),
-                            CreatedAtUtc = Timestamp.FromDateTime(eventEntity.CreatedAtUtc.AsUtc()),
-                            ModifiedAt = Timestamp.FromDateTime(eventEntity.ModifiedtAt.AsUtcNullMinimum()),
-                            ModifiedAtUtc = Timestamp.FromDateTime(eventEntity.ModifiedAtUtc.AsUtcNullMinimum()),
-                            TimeZone = eventEntity.TimeZone
-                        },
-                        Entity = eventEntity.Entity,
-                        Data = eventEntity.Data,
-                        EventType = (EventType)eventEntity.EventType,
-                        Id = eventEntity.Id.ToString(),
-                        Version = eventEntity.Version,
-                        UserId = eventEntity.UserId.ToString(),
-                        EntityId = eventEntity.EntityId.ToString()
-                    };
-
+                    var eventData = manualGrpcMapper.Map(eventEntity);
                     eventDataList.Add(eventData);
                 }
                 var response = new GetEventsReply(eventDataList);

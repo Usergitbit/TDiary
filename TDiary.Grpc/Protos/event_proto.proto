@@ -48,7 +48,9 @@ message EventData {
   string data = 6;
   AuditData audit_data = 7;
   string user_id = 8;
-  string entityId = 9;
+  string entity_id = 9;
+  google.protobuf.StringValue initial_data = 10;
+  google.protobuf.StringValue changes = 11;
 }
 
 message AuditData {

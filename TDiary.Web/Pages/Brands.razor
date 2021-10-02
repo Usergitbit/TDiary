@@ -58,7 +58,7 @@ else {
             Version = 1,
             EntityId = Brand.Id
         };
-        await EventService.Add(userId, addBrandEvent);
+        await EventService.Add(addBrandEvent);
         Brand = new();
         await Get();
     }

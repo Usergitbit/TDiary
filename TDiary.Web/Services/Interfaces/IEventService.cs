@@ -8,6 +8,6 @@ namespace TDiary.Web.Services.Interfaces
 {
     public interface IEventService
     {
-        Task Add(Guid userId, Event eventEntity);
+        Task Add(Event eventEntity);
     }
 }

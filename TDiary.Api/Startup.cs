@@ -20,6 +20,8 @@ using TDiary.Api.Services.Interfaces;
 using TDiary.Api.Validators;
 using TDiary.Common.ServiceContracts;
 using TDiary.Database;
+using TDiary.Grpc.ServiceContracts;
+using TDiary.Grpc.ServiceContracts.Implementations;
 
 namespace TDiary.Api
 {
@@ -45,6 +47,7 @@ namespace TDiary.Api
             });
                 
             services.AddScoped<IEventService, EventService>();
+            services.AddScoped<IManualGrpcMapper, ManualGrpcMapper>();
 
             services.AddSingleton<EventValidator>();
 
