@@ -37,7 +37,8 @@ namespace TDiary.Web.Services
         public async Task Add(Event eventEntity)
         {
             var isOnline = await networkStateService.IsOnline();
-            if (isOnline)
+            var isApiAvailable = await networkStateService.IsApiOnline();
+            if (isOnline && isApiAvailable)
             {
                 try
                 {

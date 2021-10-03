@@ -30,7 +30,7 @@ namespace TDiary.Web.Services
         private readonly IMergeService mergeService;
         private readonly IEntityRelationsValidatorService entityRelationsValidator;
         private readonly IUpdateEventMergerService updateEventMergerService;
-        private readonly PingProto.PingProtoClient pingClient;
+        private readonly NetworkStateService networkStateService;
         private readonly IManualGrpcMapper manualGrpcMapper;
 
         public SynchronizationService(IndexedDBManager dbManager,
@@ -40,7 +40,7 @@ namespace TDiary.Web.Services
             IMergeService mergeService,
             IEntityRelationsValidatorService entityRelationsValidator,
             IUpdateEventMergerService updateEventMergerService,
-            PingProto.PingProtoClient pingClient,
+            NetworkStateService networkStateService,
             IManualGrpcMapper manualGrpcMapper)
         {
             this.dbManager = dbManager;
@@ -50,19 +50,16 @@ namespace TDiary.Web.Services
             this.mergeService = mergeService;
             this.entityRelationsValidator = entityRelationsValidator;
             this.updateEventMergerService = updateEventMergerService;
-            this.pingClient = pingClient;
+            this.networkStateService = networkStateService;
             this.manualGrpcMapper = manualGrpcMapper;
         }
 
         public async Task Synchronize(Guid userId)
         {
-            try
+            var apiAvailable = await networkStateService.IsApiOnline();
+            if (!apiAvailable)
             {
-                await pingClient.PingAsync(new PingRequest(), deadline: DateTime.UtcNow.AddSeconds(0.25));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Aborting sync. Api is not available: {ex.Message}\n{ex.StackTrace}");
+                Console.WriteLine($"Aborting sync. Api is not available.");
                 return;
             }
 

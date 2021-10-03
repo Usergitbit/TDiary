@@ -15,6 +15,7 @@
     </EditForm>
 
     <button @onclick="Add">Add</button>
+    <button @onclick="Add1000">Add1000</button>
     <button @onclick="Get">Get</button>
 
     @foreach (var brand in BrandsList)
@@ -67,6 +68,34 @@ else
         };
         await EventService.Add(addBrandEvent);
         Brand = new();
+        await Get();
+    }
+
+    public async Task Add1000()
+    {
+        //TODO: add bulk event rpc
+        for (var i = 0; i < 1000; i++)
+        {
+            var userId = await GetUserId();
+            Brand.UserId = userId;
+            Brand.Id = Guid.NewGuid();
+            Brand.Name = $"Brand {Brand.Id}";
+            var addBrandEvent = new Event
+            {
+                CreatedAt = DateTime.Now,
+                CreatedAtUtc = DateTime.UtcNow,
+                Data = JsonSerializer.Serialize(Brand),
+                Entity = "Brand",
+                EventType = EventType.Insert,
+                Id = Guid.NewGuid(),
+                TimeZone = TimeZoneInfo.Local.Id,
+                UserId = userId,
+                Version = 1,
+                EntityId = Brand.Id
+            };
+            await EventService.Add(addBrandEvent);
+            Brand = new();
+        }
         await Get();
     }
 
