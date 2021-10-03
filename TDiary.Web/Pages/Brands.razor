@@ -17,7 +17,7 @@
     <button @onclick="Get">Get</button>
 
     @foreach (var brand in BrandsList) {
-        <div>@brand.Name</div>
+        <NavLink href="@($"brand/{brand.Id}")" > @brand.Name</NavLink>
     }
 }
 else {

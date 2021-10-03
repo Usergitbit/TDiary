@@ -17,6 +17,14 @@ namespace TDiary.Web.Services
         {
             this.dbManager = dbManager;
         }
+
+        public async Task<Brand> GetBrand(Guid brandId)
+        {
+            var brand = await dbManager.GetRecordById<Guid, Brand>(StoreNameConstants.Brands, brandId);
+
+            return brand;
+        }
+
         public async Task<List<Brand>> GetBrands(Guid userId)
         {
             var indexSearch = new StoreIndexQuery<string>

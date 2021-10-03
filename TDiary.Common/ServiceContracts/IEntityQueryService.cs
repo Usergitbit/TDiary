@@ -9,5 +9,6 @@ namespace TDiary.Common.ServiceContracts
     public interface IEntityQueryService
     {
         Task<List<Brand>> GetBrands(Guid userId);
+        Task<Brand> GetBrand(Guid brandId);
     }
 }
