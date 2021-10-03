@@ -58,7 +58,7 @@ namespace TDiary.Web.Services
         {
             try
             {
-                await pingClient.PingAsync(new PingRequest(), deadline: DateTime.UtcNow.AddSeconds(0.5));
+                await pingClient.PingAsync(new PingRequest(), deadline: DateTime.UtcNow.AddSeconds(0.25));
             }
             catch (Exception ex)
             {

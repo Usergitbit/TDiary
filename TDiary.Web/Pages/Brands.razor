@@ -6,7 +6,8 @@
 @inject NetworkStateService NetworkStateService
 @inject ISynchronizationService SynchronizationService
 
-@if (!IsBusy) {
+@if (!IsBusy)
+{
 
     <h3>Brands</h3>
     <EditForm Model="Brand">
@@ -16,11 +17,15 @@
     <button @onclick="Add">Add</button>
     <button @onclick="Get">Get</button>
 
-    @foreach (var brand in BrandsList) {
-        <NavLink href="@($"brand/{brand.Id}")" > @brand.Name</NavLink>
+    @foreach (var brand in BrandsList)
+    {
+        <div>
+            <NavLink href="@($"brand/{brand.Id}")"> @brand.Name</NavLink>
+        </div>
     }
 }
-else {
+else
+{
     <h3>Busy</h3>
 }
 
@@ -32,7 +37,8 @@ else {
     protected override async Task OnInitializedAsync()
     {
         var isOnline = await NetworkStateService.IsOnline();
-        if (isOnline) {
+        if (isOnline)
+        {
             var userId = await GetUserId();
             IsBusy = true;
             await SynchronizationService.Synchronize(userId);
@@ -46,7 +52,8 @@ else {
         var userId = await GetUserId();
         Brand.UserId = userId;
         Brand.Id = Guid.NewGuid();
-        var addBrandEvent = new Event {
+        var addBrandEvent = new Event
+        {
             CreatedAt = DateTime.Now,
             CreatedAtUtc = DateTime.UtcNow,
             Data = JsonSerializer.Serialize(Brand),

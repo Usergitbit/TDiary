@@ -7,7 +7,7 @@ using TDiary.Common.Models.Entities;
 using TDiary.Common.Models.Entities.Enums;
 using TDiary.Common.ServiceContracts;
 
-namespace TDiary.Web.Services
+namespace TDiary.Common.ServiceContracts.Implementations
 {
     public class UpdateEventMergerService : IUpdateEventMergerService
     {

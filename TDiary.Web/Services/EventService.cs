@@ -41,6 +41,7 @@ namespace TDiary.Web.Services
             {
                 try
                 {
+                    // TODO: check with ping if api available maybe move ping to network state service
                     var eventData = manualGrpcMapper.Map(eventEntity);
                     var reply = await eventClient.AddEventAsync(new AddEventRequest
                     {

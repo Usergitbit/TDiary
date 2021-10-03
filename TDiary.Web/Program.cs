@@ -18,6 +18,7 @@ using TDiary.Web.Services.Interfaces;
 using TDiary.Common.ServiceContracts.Implementations;
 using TDiary.Grpc.ServiceContracts;
 using TDiary.Grpc.ServiceContracts.Implementations;
+using TDiary.Web.Models;
 
 namespace TDiary.Web
 {
@@ -28,14 +29,8 @@ namespace TDiary.Web
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
 
-            // We register a named HttpClient here for the API
-            builder.Services.AddHttpClient("api")
-                .AddHttpMessageHandler(sp =>
-                {
-                    var handler = sp.GetService<AuthorizationMessageHandler>()
-                        .ConfigureHandler(new[] { "https://localhost:5002" }, new[] { "tdiaryapi.full" });
-                    return handler;
-                });
+            var appSettings = builder.Configuration.Get<AppSettings>();
+            Console.WriteLine(appSettings.Environment);
 
             builder.Services.AddScoped(sp => sp.GetService<IHttpClientFactory>().CreateClient("api"));
             builder.Services.AddScoped<LocalUserStore>();
@@ -49,18 +44,18 @@ namespace TDiary.Web
 
             builder.Services.AddGrpcClient<EventProto.EventProtoClient>(o =>
             {
-                o.Address = new Uri("https://localhost:5002");
+                o.Address = new Uri(appSettings.Api.Url);
             }).ConfigurePrimaryHttpMessageHandler((services) =>
             {
                 var handler = services.GetService<AuthorizationMessageHandler>()
-                  .ConfigureHandler(new[] { "https://localhost:5002" }, new[] { "tdiaryapi.full" });
+                  .ConfigureHandler(new[] { appSettings.Api.Url }, appSettings.Api.Scopes);
                 handler.InnerHandler = new HttpClientHandler();
                 return new GrpcWebHandler(GrpcWebMode.GrpcWeb, handler);
             });
 
             builder.Services.AddGrpcClient<PingProto.PingProtoClient>(o =>
             {
-                o.Address = new Uri("https://localhost:5002");
+                o.Address = new Uri(appSettings.Api.Url);
             }).ConfigurePrimaryHttpMessageHandler(() =>
             {
                 var grcpWebHandler = new GrpcWebHandler(GrpcWebMode.GrpcWeb);
