@@ -9,5 +9,6 @@ namespace TDiary.Web.Services.Interfaces
     public interface IEventService
     {
         Task Add(Event eventEntity);
+        Task BulkAdd(IEnumerable<Event> eventEntities);
     }
 }

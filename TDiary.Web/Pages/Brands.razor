@@ -74,6 +74,7 @@ else
     public async Task Add1000()
     {
         //TODO: add bulk event rpc
+        var brandEvents = new List<Event>();
         for (var i = 0; i < 1000; i++)
         {
             var userId = await GetUserId();
@@ -93,9 +94,10 @@ else
                 Version = 1,
                 EntityId = Brand.Id
             };
-            await EventService.Add(addBrandEvent);
+            brandEvents.Add(addBrandEvent);
             Brand = new();
         }
+        await EventService.BulkAdd(brandEvents);
         await Get();
     }
 

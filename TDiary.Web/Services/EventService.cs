@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using TDiary.Common.Models.Entities;
 using TDiary.Common.ServiceContracts;
@@ -42,7 +41,6 @@ namespace TDiary.Web.Services
             {
                 try
                 {
-                    // TODO: check with ping if api available maybe move ping to network state service
                     var eventData = manualGrpcMapper.Map(eventEntity);
                     var reply = await eventClient.AddEventAsync(new AddEventRequest
                     {
@@ -51,7 +49,7 @@ namespace TDiary.Web.Services
 
                     if (reply.ResultCase == AddEventReply.ResultOneofCase.ErrorInfo)
                     {
-                        throw new Exception(reply.ErrorInfo.Reason);
+                        throw new Exception(reply.ErrorInfo.Errors.FirstOrDefault()?.Reason);
                     }
                     else
                     {
@@ -73,6 +71,60 @@ namespace TDiary.Web.Services
                 });
             }
             await eventPlayerService.PlayEvent(eventEntity);
+        }
+
+        public async Task BulkAdd(IEnumerable<Event> eventEntities)
+        {
+            // TODO: needs some cleanup
+            // TODO: exceptions from adding and playing locally are a critical error - decide how to handle
+            var isOnline = await networkStateService.IsOnline();
+            var isApiAvailable = await networkStateService.IsApiOnline();
+            if (isOnline && isApiAvailable)
+            {
+                try
+                {
+                    var eventDataList = manualGrpcMapper.Map(eventEntities);
+                    var bulkAddEventRequest = new BulkAddEventRequest(eventDataList);
+                    var reply = await eventClient.BulkAddEventAsync(bulkAddEventRequest);
+                    if (reply.ResultCase == BulkAddEventReply.ResultOneofCase.ErrorInfo)
+                    {
+                        throw new Exception(reply.ErrorInfo.Errors.FirstOrDefault()?.Reason);
+                    }
+                    else
+                    {
+                        foreach (var eventEntity in eventEntities)
+                        {
+                            await dbManager.AddRecord(new StoreRecord<Event> { Storename = StoreNameConstants.Events, Data = eventEntity });
+                            await eventPlayerService.PlayEvent(eventEntity);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    foreach (var eventEntity in eventEntities)
+                    {
+                        await dbManager.AddRecord(new StoreRecord<Event>
+                        {
+                            Storename = StoreNameConstants.UnsynchronizedEvents,
+                            Data = eventEntity
+                        });
+                        await eventPlayerService.PlayEvent(eventEntity);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var eventEntity in eventEntities)
+                {
+                    await dbManager.AddRecord(new StoreRecord<Event>
+                    {
+                        Storename = StoreNameConstants.UnsynchronizedEvents,
+                        Data = eventEntity
+                    });
+                    await eventPlayerService.PlayEvent(eventEntity);
+                }
+            }
         }
     }
 }

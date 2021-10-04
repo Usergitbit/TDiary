@@ -58,5 +58,29 @@ namespace TDiary.Grpc.ServiceContracts.Implementations
 
             return eventEntity;
         }
+
+        public List<Event> Map(IEnumerable<EventData> eventDatas)
+        {
+            var result = new List<Event>();
+            foreach(var eventData in eventDatas)
+            {
+                var eventEntity = Map(eventData);
+                result.Add(eventEntity);
+            }
+
+            return result;
+        }
+
+        public List<EventData> Map(IEnumerable<Event> events)
+        {
+            var result = new List<EventData>();
+            foreach (var eventEntity in events)
+            {
+                var eventData = Map(eventEntity);
+                result.Add(eventData);
+            }
+
+            return result;
+        }
     }
 }

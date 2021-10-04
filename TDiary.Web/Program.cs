@@ -80,9 +80,10 @@ namespace TDiary.Web
             builder.Services.AddIndexedDB(dbStore =>
             {
                 dbStore.DbName = "TDiary";
-                //todo: get from somewhere to do comparisons for recreation
+                // TODO: how to handle version changes
                 dbStore.Version = 1;
 
+                // TODO: optimize by determining which properties actually need an index, there will be lots of inserts/updates so indexes should be minimized
                 var eventsSchema = new SchemaBuilder<Event>()
                     .StoreName(StoreNameConstants.Events)
                     .BaseProperties()

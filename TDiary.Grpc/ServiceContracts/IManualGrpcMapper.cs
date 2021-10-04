@@ -10,5 +10,7 @@ namespace TDiary.Grpc.ServiceContracts
     {
         EventData Map(Event eventEntity);
         Event Map(EventData eventData);
+        List<Event> Map(IEnumerable<EventData> eventDataList);
+        List<EventData> Map(IEnumerable<Event> events);
     }
 }

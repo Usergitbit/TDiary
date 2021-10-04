@@ -12,7 +12,7 @@ namespace TDiary.Common.ServiceContracts.Implementations
     public class UpdateEventMergerService : IUpdateEventMergerService
     {
         //TODO: merging for all entities, some props shouldn't be merged like navigation ones
-        // version handling?
+        //TODO: version handling?
         public Event Merge(Event serverEvent, Event localEvent)
         {
             if (serverEvent.Entity != localEvent.Entity)

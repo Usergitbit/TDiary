@@ -8,6 +8,7 @@ import "google/protobuf/wrappers.proto";
 service EventProto {
   rpc AddEvent (AddEventRequest) returns (AddEventReply);
   rpc GetEvents (GetEventsRequest) returns (GetEventsReply);
+  rpc BulkAddEvent (BulkAddEventRequest) returns (BulkAddEventReply);
 }
 
 message AddEventRequest {
@@ -16,8 +17,19 @@ message AddEventRequest {
 
 message AddEventReply {
   oneof result {
-    ErrorInfo error_info = 1;
+    ErrorInformation error_info = 1;
 	ResultCode result_code = 2;
+  }
+}
+
+message BulkAddEventRequest {
+    repeated EventData event_data = 1;
+}
+
+message BulkAddEventReply {
+  oneof result {
+    ErrorInformation error_info = 1;
+    ResultCode result_code = 2;
   }
 }
 
@@ -27,18 +39,29 @@ message GetEventsRequest {
 
 message GetEventsReply {
   oneof result {
-    ErrorInfo error_info = 1;
+    ErrorInformation error_info = 1;
     ResultCode result_code = 2;
   }
   repeated EventData event_data = 3;
 }
 
-message ErrorInfo {
-  string reason = 1;
-  ErrorType errorType = 2;
+message ErrorInformation {
+    repeated Error errors = 1;
 }
 
+message Error {
+  string reason = 1;
+  ErrorType error_type = 2;
+  string event_id = 3;
+  string entity_id = 4;
+  string entity = 5;
+  repeated ValidationError validation_errors = 6;
+}
 
+message ValidationError {
+  string property = 1;
+  repeated string reasons = 2;
+}
 
 message EventData {
   string id = 1;
@@ -71,7 +94,7 @@ enum EventType {
 enum ErrorType {
   VALIDATION = 0;
   INTERNAL = 1;
-  BAD_REQUEST = 2;
+  DUPLICATE_ID = 2;
 }
 
 enum ResultCode {

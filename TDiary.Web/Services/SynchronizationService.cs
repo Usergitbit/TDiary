@@ -12,7 +12,6 @@ using TG.Blazor.IndexedDB;
 using TDiary.Common.Extensions;
 using TDiary.Common.Models.Domain.Enums;
 using TDiary.Web.Services.Interfaces;
-using Grpc.Core;
 using TDiary.Grpc.ServiceContracts;
 
 namespace TDiary.Web.Services
@@ -54,6 +53,20 @@ namespace TDiary.Web.Services
             this.manualGrpcMapper = manualGrpcMapper;
         }
 
+        //TODO: test the access token thing to be sure, maybe find a way to refresh token from here if the handler doesn't do it?
+
+        /// <summary>
+        /// sync flow:
+        /// if ping fails => skip <br/>
+        /// if get remotes events OK => sync <br/>
+        /// if get remote events fails => skip and log reason for failure <br/>
+        /// if the fail is access token related it will get refreshed when navigating to some other page at some point and the sync will run there <br/>
+        /// flow of an operation: <br/>
+        /// if online => sync <br/>
+        /// perform local operations <br/>
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public async Task Synchronize(Guid userId)
         {
             var apiAvailable = await networkStateService.IsApiOnline();
@@ -85,9 +98,11 @@ namespace TDiary.Web.Services
                 return;
             }
 
-            // TODO: push all events with a single call - if call fails stop sync
-            // group local changes into one transaction (no support from this indexedDb library currently)
-            // what to do if transaction fails and events already pushed? full sync?
+            // TODO: put all local operations in a transaction (not supported indexdb library atm), group all push operations and send to server in bulk
+            // if push successful -> commit transaction
+            // if push fails -> revert transaction
+            // local transactions are unlikely to fail except maybe due to low memory but if pushes to server were successful it's okay
+            // if local transaction fails after push -> critical error and full resync needed 
             try
             {
                 var unsynchronizedEvents = await GetUnsynchronized(userId);
@@ -164,15 +179,6 @@ namespace TDiary.Web.Services
         }
         private async Task<List<Event>> GetRemoteEvents(DateTime lastEventDateUtc)
         {
-            // maybe simpler sync flow:
-            // if get remotes events OK => sync
-            // if get remote events fails => skip and log reason for failure
-            // if the fail is access token related it will get refreshed when navigating to some other page at some point and the sync will run there
-
-            // repository flow
-            // if online => sync
-            // return data from local
-
             var reply = await eventClient.GetEventsAsync(new GetEventsRequest
             {
                 LastEventDateUtc = Timestamp.FromDateTime(lastEventDateUtc.AsUtc())
@@ -190,7 +196,7 @@ namespace TDiary.Web.Services
 
         private async Task<DateTime> GetLastEventDateTime(Guid userId)
         {
-            //TODO: optimize to query by max somehow (upper bound in index db)
+            //TODO: optimize to query by max somehow (upper bound in index db not supported by library)
             var lastEventDate = DateTime.MinValue;
             var indexSearch = new StoreIndexQuery<string>
             {

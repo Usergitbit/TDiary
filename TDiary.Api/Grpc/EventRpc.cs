@@ -26,8 +26,8 @@ namespace TDiary.Api.Grpc
         private readonly EventValidator eventValidator;
         private readonly IManualGrpcMapper manualGrpcMapper;
 
-        public EventRpc(ILogger<EventRpc> logger, 
-            IEventService eventService, 
+        public EventRpc(ILogger<EventRpc> logger,
+            IEventService eventService,
             EventValidator eventValidator,
             IManualGrpcMapper manualGrpcMapper)
         {
@@ -43,36 +43,75 @@ namespace TDiary.Api.Grpc
             {
                 if (!eventValidator.IsValid(request.EventData, out var propertyValidationFailures))
                 {
-                    var error = new ErrorInfo(propertyValidationFailures);
-
-                    return new AddEventReply(error);
+                    var validationError = new Error(request.EventData, propertyValidationFailures);
+                    var errorInformation = new ErrorInformation(validationError);
+                    return new AddEventReply(errorInformation);
                 }
 
                 var userId = context.GetUserId();
                 var eventEntity = manualGrpcMapper.Map(request.EventData);
-                if(eventEntity.UserId != userId)
+                if (eventEntity.UserId != userId)
                 {
                     // TODO: what to do if an event is sent for a different user?
                 }
                 else
-
-                await eventService.Add(userId, eventEntity);
+                {
+                    await eventService.Add(eventEntity);
+                }
 
                 return new AddEventReply();
             }
             catch (DuplicateIdException ex)
             {
                 logger.LogError(ex, "Dupliate id exception adding event.");
-                var error = new ErrorInfo(ex);
+                var error = new ErrorInformation(ex);
 
                 return new AddEventReply(error);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Exception adding event.");
-                var error = new ErrorInfo(ex);
+                var error = new ErrorInformation(ex);
 
                 return new AddEventReply(error);
+            }
+        }
+
+        public override async Task<BulkAddEventReply> BulkAddEvent(BulkAddEventRequest request, ServerCallContext context)
+        {
+            try
+            {
+                var validationErrors = new List<Error>();
+                foreach (var eventData in request.EventData)
+                {
+                    if (!eventValidator.IsValid(eventData, out var propertyValidationFailures))
+                    {
+                        var validationError = new Error(eventData, propertyValidationFailures);
+                        validationErrors.Add(validationError);
+                    }
+                }
+
+                if (validationErrors.Any())
+                {
+                    var errorInformation = new ErrorInformation(validationErrors);
+                    return new BulkAddEventReply(errorInformation);
+                }
+
+                var userId = context.GetUserId();
+                var eventEntities = manualGrpcMapper.Map(request.EventData);
+                // TODO: check if user ids match up?
+
+                await eventService.BulkAdd(eventEntities);
+
+                return new BulkAddEventReply();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Exception adding event.");
+                var error = new ErrorInformation(ex);
+
+                return new BulkAddEventReply(error);
             }
         }
 
@@ -95,7 +134,7 @@ namespace TDiary.Api.Grpc
             catch (Exception ex)
             {
                 logger.LogError(ex, "Exception adding event.");
-                var error = new ErrorInfo(ex);
+                var error = new ErrorInformation(ex);
 
                 return new GetEventsReply(error);
             }

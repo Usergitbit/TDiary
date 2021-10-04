@@ -16,9 +16,9 @@ namespace TDiary.Grpc.Protos
                 ResultCode = ResultCode.Ok;
         }
 
-        public GetEventsReply(ErrorInfo errorInfo)
+        public GetEventsReply(ErrorInformation errorInformation) : base()
         {
-            ErrorInfo = errorInfo;
+            ErrorInfo = errorInformation;
         }
     }
 }

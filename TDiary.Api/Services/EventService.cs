@@ -19,9 +19,8 @@ namespace TDiary.Api.Services
         {
             this.tdiaryDatabaseContext = tdiaryDatabaseContext;
         }
-        public async Task Add(Guid userId, Event eventEntity)
+        public async Task Add(Event eventEntity)
         {
-            eventEntity.UserId = userId;
             var existingEvent = await tdiaryDatabaseContext.Events
                 .AsNoTracking()
                 .FirstOrDefaultAsync(e => e.Id == eventEntity.Id);
@@ -30,6 +29,13 @@ namespace TDiary.Api.Services
                 throw new DuplicateIdException(eventEntity.Id, nameof(Event));
 
             tdiaryDatabaseContext.Add(eventEntity);
+            await tdiaryDatabaseContext.SaveChangesAsync();
+        }
+
+        public async Task BulkAdd(IReadOnlyList<Event> eventEntities)
+        {
+            // TODO: maybe optimize, ef sucks at bulk operations
+            tdiaryDatabaseContext.AddRange(eventEntities);
             await tdiaryDatabaseContext.SaveChangesAsync();
         }
 
