@@ -20,6 +20,11 @@ namespace TDiary.Common.ServiceContracts.Implementations
                 throw new InvalidOperationException($"Attempt to merge server entity {serverEvent.Entity} with local entity {localEvent.Entity}");
             }
 
+            if (serverEvent.EntityId != localEvent.EntityId)
+            {
+                throw new InvalidOperationException($"Attempt to merge diferent entities: {serverEvent.Entity} {serverEvent.EntityId} with {serverEvent.Entity} {localEvent.EntityId}");
+            }
+
             Event result;
             switch (serverEvent.Entity)
             {
@@ -62,6 +67,8 @@ namespace TDiary.Common.ServiceContracts.Implementations
                     // TODO: maybe not use reflection?
                     if (serverEvent.CreatedAtUtc < localEvent.CreatedAtUtc)
                     {
+                        // TODO: DateTime and Guid will incorrectly deserialize to string and will fail this, most primitive types should be ok
+                        // TODO: check if enums are ok
                         var localBrandPropertyValue = localBrand.GetType().GetProperty(changedProp).GetValue(localBrand);
                         mergedBrand.GetType().GetProperty(changedProp).SetValue(mergedBrand, localBrandPropertyValue);
                         changes.Add(changedProp, localBrandPropertyValue);
@@ -75,8 +82,12 @@ namespace TDiary.Common.ServiceContracts.Implementations
                 }
             }
 
+            eventEntity.InitialData = serverEvent.Data;
             eventEntity.Data = JsonSerializer.Serialize(mergedBrand);
-            eventEntity.Changes = JsonSerializer.Serialize(changes);
+            if (changes.Any())
+            {
+                eventEntity.Changes = JsonSerializer.Serialize(changes);
+            }
 
             return eventEntity;
         }
