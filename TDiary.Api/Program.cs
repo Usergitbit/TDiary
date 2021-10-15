@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace TDiary.Api
@@ -23,10 +24,25 @@ namespace TDiary.Api
                     webBuilder.UseStartup<Startup>();
                     webBuilder.UseKestrel((context, options) =>
                     {
-                        options.ListenLocalhost(5002, listenOptions=> 
+                        var ipVariable = Environment.GetEnvironmentVariable("Ip");
+                        var portVariable = Environment.GetEnvironmentVariable("Port");
+
+                        if(string.IsNullOrWhiteSpace(portVariable))
                         {
-                            listenOptions.UseHttps();
-                        });
+                            portVariable = "5002";
+                        }
+                        var port = int.Parse(portVariable);
+
+                        if (ipVariable == "localhost")
+                        {
+                            options.ListenLocalhost(port);
+                        }
+                        else
+                        {
+                            var ip = IPAddress.Parse(ipVariable);
+                            options.Listen(ip, port);
+                        }
+
                     });
                 });
     }

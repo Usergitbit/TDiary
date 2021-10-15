@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TDiary.Api.AppSettings;
 using TDiary.Api.Grpc;
 using TDiary.Api.Services;
 using TDiary.Api.Services.Interfaces;
@@ -39,9 +40,12 @@ namespace TDiary.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var appSettings = configuration.Get<AppSettings.AppSettings>();
+
             services.AddDbContext<TDiaryDatabaseContext>(options => 
             {
-                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+                var connection = Environment.GetEnvironmentVariable("DefaultConnection");
+                options.UseNpgsql(connection);
                 options.EnableSensitiveDataLogging();
                 options.EnableDetailedErrors();
             });
@@ -56,7 +60,7 @@ namespace TDiary.Api
                 options.AddPolicy("TDiary",
                                   builder =>
                                   {
-                                      builder.WithOrigins("https://localhost:5005")
+                                      builder.WithOrigins(appSettings.Cors.Origins)
                                         .AllowAnyMethod()
                                         .AllowAnyHeader()
                                         .AllowCredentials()
@@ -72,7 +76,7 @@ namespace TDiary.Api
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
-                    options.Authority = "https://localhost:5001";
+                    options.Authority = appSettings.Authorization.Authority;
                     options.TokenValidationParameters.ValidTypes = new[] { "at+jwt" };
                     options.TokenValidationParameters.ValidateAudience = false;
                 });
@@ -97,6 +101,13 @@ namespace TDiary.Api
                     }
                 });
             });
+
+            services.AddHsts(options =>
+            {
+                options.Preload = true;
+                options.IncludeSubDomains = true;
+                options.MaxAge = TimeSpan.FromDays(365);
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -112,14 +123,11 @@ namespace TDiary.Api
             else
             {
                 app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
             var context = serviceProvider.GetRequiredService<TDiaryDatabaseContext>();
             context?.Database.Migrate();
-
-            app.UseHsts();
 
             app.UseHttpsRedirection();
 
