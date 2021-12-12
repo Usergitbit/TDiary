@@ -69,6 +69,8 @@ namespace TDiary.Web.Services
         /// <returns></returns>
         public async Task Synchronize(Guid userId)
         {
+            // TODO: check if sts is online as well
+
             var apiAvailable = await networkStateService.IsApiOnline();
             if (!apiAvailable)
             {
@@ -107,7 +109,7 @@ namespace TDiary.Web.Services
             {
                 var unsynchronizedEvents = await GetUnsynchronized(userId);
                 var backupDate = DateTime.UtcNow;
-                await localStorageService.SetItemAsync($"{unsynchronizedEventsBackup}_{backupDate:yyyy-MM-dd-HH-mm-ss}", unsynchronizedEvents);
+                await localStorageService.SetItemAsync($"{unsynchronizedEventsBackup}", unsynchronizedEvents);
                 var unsynced = await localStorageService.GetItemAsync<List<Event>>($"{unsynchronizedEventsBackup}_{backupDate:yyyy-MM-dd-HH-mm-ss}");
                 var mergeResult = mergeService.Merge(incomingEvents, unsynchronizedEvents);
                 while (mergeResult.EventResolutions.TryDequeue(out var eventResolution))
@@ -159,6 +161,7 @@ namespace TDiary.Web.Services
             catch(Exception ex)
             {
                 Console.WriteLine($"Critical sync failure: {ex.Message}\n{ex.StackTrace}. Full sync required to recover.");
+                // TODO: this is never checked
                 await localStorageService.SetItemAsync(fullSyncRequired, true);
             }
         }

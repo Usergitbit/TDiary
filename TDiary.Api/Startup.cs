@@ -8,11 +8,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using TDiary.Api.AppSettings;
 using TDiary.Api.Grpc;
@@ -41,15 +44,14 @@ namespace TDiary.Api
         public void ConfigureServices(IServiceCollection services)
         {
             var appSettings = configuration.Get<AppSettings.AppSettings>();
-
-            services.AddDbContext<TDiaryDatabaseContext>(options => 
+            var connection = appSettings.ConnectionStrings.DefaultConnection;
+            services.AddDbContext<TDiaryDatabaseContext>(options =>
             {
-                var connection = Environment.GetEnvironmentVariable("DefaultConnection");
                 options.UseNpgsql(connection);
                 options.EnableSensitiveDataLogging();
                 options.EnableDetailedErrors();
             });
-                
+
             services.AddScoped<IEventService, EventService>();
             services.AddScoped<IManualGrpcMapper, ManualGrpcMapper>();
 
@@ -79,6 +81,27 @@ namespace TDiary.Api
                     options.Authority = appSettings.Authorization.Authority;
                     options.TokenValidationParameters.ValidTypes = new[] { "at+jwt" };
                     options.TokenValidationParameters.ValidateAudience = false;
+
+                    #region DANGER: Ignore SSL erros
+                    //var handler = new HttpClientHandler
+                    //{
+                    //    ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) =>
+                    //    {
+                    //        return true;
+                    //    },
+                    //};
+                    //var backchannel = new HttpClient(handler);
+                    //backchannel.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET Core JwtBearer handler");
+                    //backchannel.Timeout = options.BackchannelTimeout;
+                    //backchannel.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
+                    //var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>($"{options.Authority}/.well-known/openid-configuration", new OpenIdConnectConfigurationRetriever(),
+                    //    new HttpDocumentRetriever(backchannel) { RequireHttps = options.RequireHttpsMetadata });
+                    //options.ConfigurationManager = configurationManager;
+                    #endregion
+
+                    #region Custom configuration manager to solve SSL issues without ignoring
+                    //options.ConfigurationManager = new CustomConfigurationManager(appSettings.Authorization);
+                    #endregion
                 });
 
             services.AddSwaggerGen(c =>
@@ -117,14 +140,25 @@ namespace TDiary.Api
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TDiary.Api v1"));
             }
             else
             {
                 app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
+
+            app.UseSwagger(c =>
+            {
+                //where to put the swagger generated json, the document name MUST be there and indicates the version
+                c.RouteTemplate = "tdiary/swagger/{documentName}/swagger.json";
+            });
+            app.UseSwaggerUI(c =>
+            {
+                //by default /swagger to open swagger ui, this is used to change it
+                c.RoutePrefix = "tdiary";
+                // this must pint to the above route tempalte but with a given document name
+                c.SwaggerEndpoint("/tdiary/swagger/v1/swagger.json", "TDiary.Api v1");
+            });
 
             var context = serviceProvider.GetRequiredService<TDiaryDatabaseContext>();
             context?.Database.Migrate();

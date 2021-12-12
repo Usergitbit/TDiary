@@ -3,5 +3,6 @@
     public class Authorization
     {
         public string Authority { get; set; }
+        public string AuthorityOrigin { get; set; }
     }
 }

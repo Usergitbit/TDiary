@@ -32,7 +32,7 @@ namespace TDiary.Web.Services
             try
             {
                 // TODO: make this configurable
-                await pingClient.PingAsync(new PingRequest(), deadline: DateTime.UtcNow.AddSeconds(0.25));
+                await pingClient.PingAsync(new PingRequest(), deadline: DateTime.UtcNow.AddSeconds(0.5));
                 return true;
             }
             catch(Exception Ex)

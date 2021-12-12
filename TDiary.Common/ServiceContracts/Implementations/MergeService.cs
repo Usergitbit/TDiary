@@ -161,6 +161,7 @@ namespace TDiary.Common.ServiceContracts.Implementations
                         {
                             Event = outgoingEvent,
                             EventResolutionOperation = EventResolutionOperation.None,
+                            // TODO: at a later date? there is no date check? server is always the driver?
                             Reason = "Entity was updated on the server at a later date than it was deleted locally, no change will be performed."
                         };
                     }
