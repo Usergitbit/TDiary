@@ -1,10 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30907.101
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TDiary.Web", "TDiary.Web\TDiary.Web.csproj", "{CB023256-1CA2-42C1-9230-56427D9E8B0D}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TDiary.Api", "TDiary.Api\TDiary.Api.csproj", "{2F634A28-66F8-47E1-ABFE-AD7CA1A5E3F7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TDiary.Common", "TDiary.Common\TDiary.Common.csproj", "{4F92A6F7-B2E5-4CE5-B625-E72A1C874113}"
@@ -20,16 +18,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TDiary.Grpc", "TDiary.Grpc\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TDiary.UnitTests", "TDiary.UnitTests\TDiary.UnitTests.csproj", "{8CC6C312-EC3C-4285-9CE9-F4EFF9A8B375}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TDiary.Web", "TDiary.Web\TDiary.Web.csproj", "{DA7E6B5E-FDEB-47DE-A9FA-29FCFF57F892}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CB023256-1CA2-42C1-9230-56427D9E8B0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CB023256-1CA2-42C1-9230-56427D9E8B0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CB023256-1CA2-42C1-9230-56427D9E8B0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CB023256-1CA2-42C1-9230-56427D9E8B0D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2F634A28-66F8-47E1-ABFE-AD7CA1A5E3F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2F634A28-66F8-47E1-ABFE-AD7CA1A5E3F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F634A28-66F8-47E1-ABFE-AD7CA1A5E3F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -50,6 +46,10 @@ Global
 		{8CC6C312-EC3C-4285-9CE9-F4EFF9A8B375}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CC6C312-EC3C-4285-9CE9-F4EFF9A8B375}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CC6C312-EC3C-4285-9CE9-F4EFF9A8B375}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA7E6B5E-FDEB-47DE-A9FA-29FCFF57F892}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA7E6B5E-FDEB-47DE-A9FA-29FCFF57F892}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA7E6B5E-FDEB-47DE-A9FA-29FCFF57F892}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA7E6B5E-FDEB-47DE-A9FA-29FCFF57F892}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,13 @@
 ﻿@page "/brand/{id:guid}"
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using TDiary.Common.ServiceContracts
+@using TDiary.Web.Services
+@using TDiary.Web.Services.Interfaces
+@using TDiary.Common.Models.Entities
+@using System.Text.Json
+@using TDiary.Common.Models.Entities.Enums
+
 @inject AuthenticationStateProvider authenticationStateProvider
 @inject ISynchronizationService SynchronizationService
 @inject NetworkStateService NetworkStateService

@@ -32,7 +32,6 @@ namespace TDiary.Web
             var appSettings = builder.Configuration.Get<AppSettings>();
             Console.WriteLine(appSettings.Environment);
 
-            builder.Services.AddScoped(sp => sp.GetService<IHttpClientFactory>().CreateClient("api"));
             builder.Services.AddScoped<LocalUserStore>();
 
             builder.Services.AddBlazoredLocalStorage();
@@ -47,7 +46,7 @@ namespace TDiary.Web
                 o.Address = new Uri(appSettings.Api.Url);
             }).ConfigurePrimaryHttpMessageHandler((services) =>
             {
-                var handler = services.GetService<AuthorizationMessageHandler>()
+                var handler = services.GetRequiredService<AuthorizationMessageHandler>()
                   .ConfigureHandler(new[] { appSettings.Api.Url }, appSettings.Api.Scopes);
                 handler.InnerHandler = new HttpClientHandler();
                 return new GrpcWebHandler(GrpcWebMode.GrpcWeb, handler);

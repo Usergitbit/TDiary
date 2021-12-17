@@ -1,4 +1,7 @@
 ﻿@page "/fetchdata"
+@using TDiary.Common.Models.Entities
+@using TDiary.Web.Services
+@using TDiary.Web.Services.Interfaces
 @attribute [Authorize]
 @inject IEventService eventService
 @inject NavigationManager NavigationManager
