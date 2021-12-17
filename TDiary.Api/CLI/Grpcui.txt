@@ -1,4 +1,4 @@
 
 go get github.com/fullstorydev/grpcui/...
 go install github.com/fullstorydev/grpcui/cmd/grpcui@latest
-grpcui localhost:5002
+grpcui localhost:42002
