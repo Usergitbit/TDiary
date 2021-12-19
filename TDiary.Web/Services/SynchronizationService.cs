@@ -182,19 +182,27 @@ namespace TDiary.Web.Services
         }
         private async Task<List<Event>> GetRemoteEvents(DateTime lastEventDateUtc)
         {
-            var reply = await eventClient.GetEventsAsync(new GetEventsRequest
+            try
             {
-                LastEventDateUtc = Timestamp.FromDateTime(lastEventDateUtc.AsUtc())
-            });
+                var reply = await eventClient.GetEventsAsync(new GetEventsRequest
+                {
+                    LastEventDateUtc = Timestamp.FromDateTime(lastEventDateUtc.AsUtc())
+                });
 
-            var events = new List<Event>(); 
-            foreach(var eventData in reply.EventData)
-            {
-                var eventEntity = manualGrpcMapper.Map(eventData);
-                events.Add(eventEntity);
+                var events = new List<Event>();
+                foreach (var eventData in reply.EventData)
+                {
+                    var eventEntity = manualGrpcMapper.Map(eventData);
+                    events.Add(eventEntity);
+                }
+
+                return events;
             }
-
-            return events;
+            catch(Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}\n{ex.StackTrace}");
+                return new List<Event>();
+            }
         }
 
         private async Task<DateTime> GetLastEventDateTime(Guid userId)

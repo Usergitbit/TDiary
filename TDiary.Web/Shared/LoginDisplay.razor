@@ -1,26 +1,16 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-@using TDiary.Web.Services
-
-@inject NavigationManager Navigation
-@inject SignOutSessionStateManager SignOutManager
-@inject LocalUserStore localuserStore;
 
 <AuthorizeView>
     <Authorized>
-        Hello, @context.User.Identity.Name!
-        <button class="nav-link btn btn-link" @onclick="BeginSignOut">Log out</button>
+        <MudHidden Breakpoint="Breakpoint.Xs">
+            <MudText Class="mr-3">Hello, @context.User.Identity.Name!</MudText>
+        </MudHidden>
+        <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" OnClick="BeginSignOut"></MudIconButton>
     </Authorized>
     <NotAuthorized>
-        <a href="authentication/login">Log in</a>
+        <MudHidden Breakpoint="Breakpoint.Xs">
+            <MudText>Log in</MudText>
+        </MudHidden>
+        <MudIconButton Icon="@Icons.Material.Filled.Login" Color="Color.Inherit" OnClick="BeginSignIn"></MudIconButton>
     </NotAuthorized>
 </AuthorizeView>
-
-@code{
-    private async Task BeginSignOut(MouseEventArgs args)
-    {
-        await SignOutManager.SetSignOutState();
-        await localuserStore.SaveUserAccountAsync(null);
-        Navigation.NavigateTo("authentication/logout");
-    }
-}

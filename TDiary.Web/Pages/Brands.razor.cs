@@ -15,15 +15,15 @@ namespace TDiary.Web.Pages
 {
     public partial class Brands
     {
-        [Inject] 
+        [Inject]
         IEventService EventService { get; set; }
-        [Inject] 
+        [Inject]
         IEntityQueryService EntityQueryService { get; set; }
-        [Inject] 
+        [Inject]
         AuthenticationStateProvider authenticationStateProvider { get; set; }
-        [Inject] 
+        [Inject]
         NetworkStateService NetworkStateService { get; set; }
-        [Inject] 
+        [Inject]
         ISynchronizationService SynchronizationService { get; set; }
         public Brand Brand { get; set; } = new();
         public List<Brand> BrandsList { get; set; } = new List<Brand>();

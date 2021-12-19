@@ -19,6 +19,7 @@ using TDiary.Common.ServiceContracts.Implementations;
 using TDiary.Grpc.ServiceContracts;
 using TDiary.Grpc.ServiceContracts.Implementations;
 using TDiary.Web.Models;
+using MudBlazor.Services;
 
 namespace TDiary.Web
 {
@@ -33,6 +34,8 @@ namespace TDiary.Web
             Console.WriteLine(appSettings.Environment);
 
             builder.Services.AddScoped<LocalUserStore>();
+
+            builder.Services.AddMudServices();
 
             builder.Services.AddBlazoredLocalStorage();
 
