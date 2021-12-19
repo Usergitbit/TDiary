@@ -39,7 +39,7 @@ namespace TDiary.Common.ServiceContracts.Implementations
 
         }
 
-        private static Event MergeBrand(Event serverEvent, Event localEvent)
+        private Event MergeBrand(Event serverEvent, Event localEvent)
         {
             var eventEntity = new Event
             {
@@ -60,25 +60,19 @@ namespace TDiary.Common.ServiceContracts.Implementations
             var localBrand = JsonSerializer.Deserialize<Brand>(localEvent.Data);
             var mergedBrand = serverBrand;
             var changes = new Dictionary<string, object>();
+            // TODO: refactor, kinda hard to understand at first glance that it only updates with local value if the server value is older
             foreach (var changedProp in localChanges.Keys)
             {
                 if (serverChanges.ContainsKey(changedProp))
                 {
-                    // TODO: maybe not use reflection?
                     if (serverEvent.CreatedAtUtc < localEvent.CreatedAtUtc)
                     {
-                        // TODO: DateTime and Guid will incorrectly deserialize to string and will fail this, most primitive types should be ok
-                        // TODO: check if enums are ok
-                        var localBrandPropertyValue = localBrand.GetType().GetProperty(changedProp).GetValue(localBrand);
-                        mergedBrand.GetType().GetProperty(changedProp).SetValue(mergedBrand, localBrandPropertyValue);
-                        changes.Add(changedProp, localBrandPropertyValue);
+                        UpdatePropertyValue(changedProp, mergedBrand, localBrand, changes);
                     }
                 }
                 else
                 {
-                    var localBrandPropertyValue = localBrand.GetType().GetProperty(changedProp).GetValue(localBrand);
-                    mergedBrand.GetType().GetProperty(changedProp).SetValue(mergedBrand, localBrandPropertyValue);
-                    changes.Add(changedProp, localBrandPropertyValue);
+                    UpdatePropertyValue(changedProp, mergedBrand, localBrand, changes);
                 }
             }
 
@@ -90,6 +84,20 @@ namespace TDiary.Common.ServiceContracts.Implementations
             }
 
             return eventEntity;
+        }
+
+        private void UpdatePropertyValue(string changedProp, Brand mergedBrand, Brand localBrand, Dictionary<string, object> changes)
+        {
+            object localBrandPropertyValue;
+            switch (changedProp)
+            {
+                case nameof(Brand.Name):
+                    localBrandPropertyValue = localBrand.Name;
+                    mergedBrand.Name = localBrandPropertyValue as string;
+                    break;
+                default: throw new NotImplementedException($"Unhandled property {changedProp}");
+            }
+            changes.Add(changedProp, localBrandPropertyValue);
         }
     }
 }
