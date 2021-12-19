@@ -81,6 +81,8 @@ namespace TDiary.Api
                     options.Authority = appSettings.Authorization.Authority;
                     options.TokenValidationParameters.ValidTypes = new[] { "at+jwt" };
                     options.TokenValidationParameters.ValidateAudience = false;
+                    // can not be lower than 5 minutes because that's the minimum in the default config manager
+                    options.AutomaticRefreshInterval = TimeSpan.FromMinutes(5);
 
                     #region DANGER: Ignore SSL erros
                     //var handler = new HttpClientHandler
