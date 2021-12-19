@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using MudBlazor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,56 +11,37 @@ using TDiary.Common.Models.Entities.Enums;
 
 namespace TDiary.Web.Pages
 {
-    public partial class BrandEdit
+    public partial class BrandEdit : IDisposable
     {
-        public EditContext EditContext { get; set; }
-        public Brand InitialBrand { get; set; }
-        public Brand Brand { get; set; }
-        public bool IsBusy { get; set; }
-        private string name = "";
-        public string Name
-        {
-            get => name;
-            set
-            {
-                name = value;
-                OnNameChange();
-            }
-        }
-        private IDictionary<string, object> Changes = new Dictionary<string, object>();
+        private readonly IDictionary<string, object> Changes = new Dictionary<string, object>();
+        private Brand InitialBrand;
+        private Brand Brand = new();
+        private EditContext EditContext;
+        private bool isBusy;
+        private Guid UserId;
 
         [Parameter]
         public Guid Id { get; set; }
 
-        public Guid UserId { get; set; }
-
         protected override async Task OnInitializedAsync()
         {
-            EditContext = new EditContext(Name);
+            isBusy = true;
+            EditContext = new(Brand);
             UserId = await GetUserId();
             var isOnline = await NetworkStateService.IsOnline();
             if (isOnline)
             {
-                IsBusy = true;
                 await SynchronizationService.Synchronize(UserId);
-                IsBusy = false;
             }
-            if (Id == Guid.Empty)
-            {
-                Brand = new Brand
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = UserId
-                };
-            }
-            else
+
+            if (Id != Guid.Empty)
             {
                 Brand = await EntityQueryService.GetBrand(Id);
                 InitialBrand = await EntityQueryService.GetBrand(Id);
-                name = Brand.Name;
-                StateHasChanged();
             }
 
+            EditContext.OnFieldChanged += OnFieldChanged;
+            isBusy = false;
         }
 
         private async Task<Guid> GetUserId()
@@ -73,7 +55,41 @@ namespace TDiary.Web.Pages
             return userId;
         }
 
-        public async Task Update()
+        public Task OnValidSubmit()
+        {
+            if (Brand.Id != Guid.Empty)
+            {
+                return Update();
+            }
+            else
+            {
+                return Add();
+            }
+        }
+
+        private async Task Add()
+        {
+            Brand.Id = Guid.NewGuid();
+            Brand.UserId = UserId;
+            var eventEntity = new Event
+            {
+                Id = Guid.NewGuid(),
+                UserId = UserId,
+                CreatedAt = DateTime.Now,
+                CreatedAtUtc = DateTime.UtcNow,
+                Data = JsonSerializer.Serialize(Brand),
+                Entity = "Brand",
+                EntityId = Brand.Id,
+                EventType = EventType.Insert,
+                TimeZone = TimeZoneInfo.Local.Id,
+                Version = 1,
+            };
+
+            await EventService.Add(eventEntity);
+            NavigationManager.NavigateTo("brands");
+        }
+
+        private async Task Update()
         {
             var eventEntity = new Event
             {
@@ -95,20 +111,31 @@ namespace TDiary.Web.Pages
             NavigationManager.NavigateTo("brands");
         }
 
-        public void OnNameChange()
+
+        private void OnFieldChanged(object sender, FieldChangedEventArgs e)
         {
-            if (name != InitialBrand.Name)
+            // TODO: maybe abstract this into a service
+            switch (e.FieldIdentifier.FieldName)
             {
-                if (!Changes.ContainsKey(nameof(Name)))
-                {
-                    Changes.Add(nameof(Name), Name);
-                }
-                else
-                {
-                    Changes[nameof(Name)] = name;
-                }
+                case nameof(Brand.Name):
+                    if (!Changes.ContainsKey(nameof(Brand.Name)))
+                    {
+                        Changes.Add(nameof(Brand.Name), Brand.Name);
+                    }
+                    else
+                    {
+                        Changes[nameof(Brand.Name)] = Brand.Name;
+                    }
+                    break;
+                default:
+                    Console.WriteLine($"Change for field {e.FieldIdentifier.FieldName} not handled.");
+                    break;
             }
-            Brand.Name = name;
+        }
+
+        public void Dispose()
+        {
+            EditContext.OnFieldChanged -= OnFieldChanged;
         }
     }
 }

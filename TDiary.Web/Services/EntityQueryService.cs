@@ -35,7 +35,7 @@ namespace TDiary.Web.Services
             };
             var results = await dbManager.GetAllRecordsByIndex<string, Brand>(indexSearch);
 
-            return results.ToList();
+            return results.OrderBy(b => b.CreatedAtUtc).ToList();
         }
     }
 }

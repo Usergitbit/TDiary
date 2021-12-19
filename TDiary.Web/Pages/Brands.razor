@@ -1,24 +1,24 @@
 ﻿@page "/brands"
+
+@using TDiary.Common.Models.Entities
+
 @attribute [Authorize]
 
 @if (!IsBusy)
 {
 
     <h3>Brands</h3>
-    <EditForm Model="Brand">
-        <InputText @bind-Value="Brand.Name" />
-    </EditForm>
 
-    <button @onclick="Add">Add</button>
-    <button @onclick="Add1000">Add1000</button>
-    <button @onclick="Get">Get</button>
+    <MudTable Items="@BrandsList" Hover="true" Loading="@IsLoadingBrands" OnRowClick="RowClickEvent" T="Brand">
+        <HeaderContent>
+            <MudTh>Name</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name">@context.Name</MudTd>
+        </RowTemplate>
+    </MudTable>
 
-    @foreach (var brand in BrandsList)
-    {
-        <div>
-            <NavLink href="@($"brand/{brand.Id}")"> @brand.Name</NavLink>
-        </div>
-    }
+    <MudFab Icon="@Icons.Material.Filled.Add" aria-label="add" OnClick="OnAddBrandClick" Class="mt-5"/>
 }
 else
 {

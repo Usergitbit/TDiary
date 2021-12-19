@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using MudBlazor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,9 +26,12 @@ namespace TDiary.Web.Pages
         NetworkStateService NetworkStateService { get; set; }
         [Inject]
         ISynchronizationService SynchronizationService { get; set; }
+        [Inject]
+        NavigationManager NavigationManager { get; set; }
         public Brand Brand { get; set; } = new();
         public List<Brand> BrandsList { get; set; } = new List<Brand>();
         public bool IsBusy { get; set; }
+        public bool IsLoadingBrands { get; set; } = true;
 
         protected override async Task OnInitializedAsync()
         {
@@ -97,10 +101,20 @@ namespace TDiary.Web.Pages
 
         public async Task Get()
         {
-
-            var userId = await GetUserId();
-            var result = await EntityQueryService.GetBrands(userId);
-            BrandsList = new List<Brand>(result);
+            try
+            {
+                var userId = await GetUserId();
+                var result = await EntityQueryService.GetBrands(userId);
+                BrandsList = new List<Brand>(result);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}\n{ex.StackTrace}");
+            }
+            finally
+            {
+                IsLoadingBrands = false;
+            }
         }
 
         private async Task<Guid> GetUserId()
@@ -113,6 +127,20 @@ namespace TDiary.Web.Pages
             var userId = Guid.Parse(userIdClaimValue);
 
             return userId;
+        }
+
+        private void RowClickEvent(TableRowClickEventArgs<Brand> tableRowClickEventArgs)
+        {
+            var clickedBrand = tableRowClickEventArgs.Item;
+            if (clickedBrand != null)
+            {
+                NavigationManager.NavigateTo($"brand/{clickedBrand.Id}");
+            }
+        }
+
+        private void OnAddBrandClick()
+        {
+            NavigationManager.NavigateTo($"brand/{Guid.Empty}");
         }
     }
 }

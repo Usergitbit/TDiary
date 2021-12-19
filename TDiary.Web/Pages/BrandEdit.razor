@@ -16,7 +16,16 @@
 @inject NavigationManager NavigationManager
 
 <h3>BrandEdit</h3>
-<EditForm EditContext="@EditContext">
-    <InputText @bind-Value="@Name"></InputText>
-</EditForm>
-<button class="btn btn-primary" @onclick="Update">Update</button>
+@if (isBusy)
+{
+    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+}
+else
+{
+    <EditForm EditContext="@EditContext" OnValidSubmit="OnValidSubmit">
+        <MudTextField Label="Name" @bind-Value="Brand.Name" For="@(() => Brand.Name)" />
+
+        <MudFab ButtonType="ButtonType.Submit" Color="Color.Primary" Icon="@Icons.Material.Filled.Save" Class="ml-auto mt-5"></MudFab>
+    </EditForm>
+}
+
