@@ -14,6 +14,12 @@
                         <p>You are not authorized to access this resource.</p>
                     }
                 </NotAuthorized>
+                <Authorizing>
+                    <div class="d-flex">
+                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="mr-5" />
+                        <MudText Align="Align.Center" Class="d-flex align-center">Authorizing...</MudText>
+                    </div>
+                </Authorizing>
             </AuthorizeRouteView>
         </Found>
         <NotFound>

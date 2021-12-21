@@ -15,17 +15,23 @@
 @inject IEventService EventService
 @inject NavigationManager NavigationManager
 
-<h3>BrandEdit</h3>
-@if (isBusy)
-{
-    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-}
-else
-{
-    <EditForm EditContext="@EditContext" OnValidSubmit="OnValidSubmit">
-        <MudTextField Label="Name" @bind-Value="Brand.Name" For="@(() => Brand.Name)" />
+<div class="d-flex mb-5">
+    <h2 class="d-flex align-center">Edit Brand</h2>
+</div>
 
-        <MudFab ButtonType="ButtonType.Submit" Color="Color.Primary" Icon="@Icons.Material.Filled.Save" Class="ml-auto mt-5"></MudFab>
-    </EditForm>
-}
+<MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="ml-0 mr-0 pa-0">
+    @if (isBusy)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else
+    {
+        <EditForm EditContext="@EditContext" OnValidSubmit="OnValidSubmit">
+            <MudTextField Label="Name" @bind-Value="Brand.Name" For="@(() => Brand.Name)" />
+
+            <MudFab ButtonType="ButtonType.Submit" Color="Color.Primary" Icon="@Icons.Material.Filled.Save" Size="@Size.Medium" Class="ml-auto mt-5"></MudFab>
+        </EditForm>
+    }
+</MudContainer>
+
 

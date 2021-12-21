@@ -4,23 +4,26 @@
 
 @attribute [Authorize]
 
-@if (!IsBusy)
-{
+<div class="d-flex mb-5">
+    <h2 class="d-flex align-center">Brands</h2>
+</div>
 
-    <h3>Brands</h3>
+<MudContainer MaxWidth="MaxWidth.False" Class="ml-0 mr-0 pa-0">
+    @if (!IsBusy)
+    {
+        <MudTable Items="@BrandsList" Hover="true" Loading="@IsLoadingBrands" LoadingProgressColor="Color.Primary" OnRowClick="RowClickEvent" T="Brand">
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Name">@context.Name</MudTd>
+            </RowTemplate>
+        </MudTable>
 
-    <MudTable Items="@BrandsList" Hover="true" Loading="@IsLoadingBrands" OnRowClick="RowClickEvent" T="Brand">
-        <HeaderContent>
-            <MudTh>Name</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="Name">@context.Name</MudTd>
-        </RowTemplate>
-    </MudTable>
-
-    <MudFab Icon="@Icons.Material.Filled.Add" aria-label="add" OnClick="OnAddBrandClick" Class="mt-5"/>
-}
-else
-{
-    <h3>Busy</h3>
-}
+        <MudFab Icon="@Icons.Material.Filled.Add" aria-label="add" OnClick="OnAddBrandClick" Size="@Size.Medium" Class="mt-5" />
+    }
+    else
+    {
+        <h3>Busy</h3>
+    }
+</MudContainer>
