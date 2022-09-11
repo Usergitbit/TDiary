@@ -7,14 +7,16 @@ using System.Threading.Tasks;
 using System;
 using TDiary.Common.Models.Entities;
 using TDiary.Common.Models.Entities.Enums;
+using TDiary.Web.ViewModels;
+using TDiary.Web.Services;
 
 namespace TDiary.Web.Pages
 {
     public partial class FoodItemEdit : IDisposable
     {
         private readonly IDictionary<string, object> Changes = new Dictionary<string, object>();
-        private FoodItem initialFoodItem;
-        private FoodItem foodItem = new();
+        private FoodItemViewModel initialFoodItemViewModel;
+        private FoodItemViewModel foodItemViewModel = new();
         private EditContext EditContext;
         private bool isBusy;
         private Guid UserId;
@@ -22,10 +24,13 @@ namespace TDiary.Web.Pages
         [Parameter]
         public Guid Id { get; set; }
 
+        [Inject]
+        public WebMapper WebMapper { get; set; }
+
         protected override async Task OnInitializedAsync()
         {
             isBusy = true;
-            EditContext = new(foodItem);
+            EditContext = new(foodItemViewModel);
             UserId = await GetUserId();
             var isOnline = await NetworkStateService.IsOnline();
             if (isOnline)
@@ -35,8 +40,9 @@ namespace TDiary.Web.Pages
 
             if (Id != Guid.Empty)
             {
-                foodItem = await EntityQueryService.GetFoodItem(Id);
-                initialFoodItem = await EntityQueryService.GetFoodItem(Id);
+                var foodItem = await EntityQueryService.GetFoodItem(Id);
+                foodItemViewModel = WebMapper.Map(foodItem);
+                initialFoodItemViewModel = WebMapper.Map(foodItem);
             }
 
             EditContext.OnFieldChanged += OnFieldChanged;
@@ -56,7 +62,7 @@ namespace TDiary.Web.Pages
 
         public Task OnValidSubmit()
         {
-            if (foodItem.Id != Guid.Empty)
+            if (foodItemViewModel.Id != Guid.Empty)
             {
                 return Update();
             }
@@ -68,17 +74,17 @@ namespace TDiary.Web.Pages
 
         private async Task Add()
         {
-            foodItem.Id = Guid.NewGuid();
-            foodItem.UserId = UserId;
+            foodItemViewModel.Id = Guid.NewGuid();
+            foodItemViewModel.UserId = UserId;
             var eventEntity = new Event
             {
                 Id = Guid.NewGuid(),
                 UserId = UserId,
                 CreatedAt = DateTime.Now,
                 CreatedAtUtc = DateTime.UtcNow,
-                Data = JsonSerializer.Serialize(foodItem),
+                Data = JsonSerializer.Serialize(foodItemViewModel),
                 Entity = "FoodItem",
-                EntityId = foodItem.Id,
+                EntityId = foodItemViewModel.Id,
                 EventType = EventType.Insert,
                 TimeZone = TimeZoneInfo.Local.Id,
                 Version = 1,
@@ -96,10 +102,10 @@ namespace TDiary.Web.Pages
                 UserId = UserId,
                 CreatedAt = DateTime.Now,
                 CreatedAtUtc = DateTime.UtcNow,
-                Data = JsonSerializer.Serialize(foodItem),
-                InitialData = JsonSerializer.Serialize(initialFoodItem),
+                Data = JsonSerializer.Serialize(foodItemViewModel),
+                InitialData = JsonSerializer.Serialize(initialFoodItemViewModel),
                 Entity = "FoodItem",
-                EntityId = foodItem.Id,
+                EntityId = foodItemViewModel.Id,
                 EventType = EventType.Update,
                 TimeZone = TimeZoneInfo.Local.Id,
                 Version = 1,
@@ -116,14 +122,14 @@ namespace TDiary.Web.Pages
             // TODO: maybe abstract this into a service
             switch (e.FieldIdentifier.FieldName)
             {
-                case nameof(foodItem.Name):
-                    if (!Changes.ContainsKey(nameof(foodItem.Name)))
+                case nameof(foodItemViewModel.Name):
+                    if (!Changes.ContainsKey(nameof(foodItemViewModel.Name)))
                     {
-                        Changes.Add(nameof(foodItem.Name), foodItem.Name);
+                        Changes.Add(nameof(foodItemViewModel.Name), foodItemViewModel.Name);
                     }
                     else
                     {
-                        Changes[nameof(foodItem.Name)] = foodItem.Name;
+                        Changes[nameof(foodItemViewModel.Name)] = foodItemViewModel.Name;
                     }
                     break;
                 default:

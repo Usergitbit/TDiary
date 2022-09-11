@@ -77,6 +77,8 @@ namespace TDiary.Web
             builder.Services.AddScoped<IEntityRelationsValidatorService, EntityRelationsValidatorService>();
             builder.Services.AddSingleton<IMergeService, MergeService>();
             builder.Services.AddSingleton<IManualGrpcMapper, ManualGrpcMapper>();
+            builder.Services.AddSingleton<WebMapper>();
+            builder.Services.AddSingleton<DefaultEventFactory>();
 
 
             builder.Services.AddIndexedDB(dbStore =>

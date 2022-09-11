@@ -1,19 +1,9 @@
 ﻿@page "/brands/{id:guid}"
 
-@using Microsoft.AspNetCore.Components.Authorization
-@using TDiary.Common.ServiceContracts
-@using TDiary.Web.Services
-@using TDiary.Web.Services.Interfaces
-@using TDiary.Common.Models.Entities
-@using System.Text.Json
-@using TDiary.Common.Models.Entities.Enums
+@inherits EditBase<Brand>;
 
-@inject AuthenticationStateProvider authenticationStateProvider
-@inject ISynchronizationService SynchronizationService
-@inject NetworkStateService NetworkStateService
-@inject IEntityQueryService EntityQueryService
-@inject IEventService EventService
-@inject NavigationManager NavigationManager
+@using TDiary.Common.Models.Entities
+@using TDiary.Web.Pages.Base
 
 <div class="d-flex mb-5">
     <h2 class="d-flex align-center">Edit Brand</h2>
@@ -27,7 +17,7 @@
     else
     {
         <EditForm EditContext="@EditContext" OnValidSubmit="OnValidSubmit">
-            <MudTextField Label="Name" @bind-Value="Brand.Name" For="@(() => Brand.Name)" />
+            <MudTextField Label="Name" @bind-Value="Entity.Name" For="@(() => Entity.Name)" />
 
             <MudFab ButtonType="ButtonType.Submit" Color="Color.Primary" Icon="@Icons.Material.Filled.Save" Size="@Size.Medium" Class="ml-auto mt-5"></MudFab>
         </EditForm>

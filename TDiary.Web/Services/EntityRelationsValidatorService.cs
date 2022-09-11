@@ -23,6 +23,7 @@ namespace TDiary.Web.Services
             bool hasDependantEntities;
             switch (eventEntity.Entity)
             {
+                // todo: here we need to check the event type then decide if this event is valid by basically checking the related entity has not been deleted
                 case "Brand":
                     hasDependantEntities = await BrandHasDependantEntites(eventEntity.EntityId);
                     break;

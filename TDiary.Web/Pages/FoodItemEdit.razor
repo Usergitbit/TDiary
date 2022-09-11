@@ -27,9 +27,17 @@
     else
     {
         <EditForm EditContext="@EditContext" OnValidSubmit="OnValidSubmit">
-            <MudTextField Label="Name" @bind-Value="foodItem.Name" For="@(() => foodItem.Name)" />
-
-            <MudFab ButtonType="ButtonType.Submit" Color="Color.Primary" Icon="@Icons.Material.Filled.Save" Size="@Size.Medium" Class="ml-auto mt-5"></MudFab>
+@*            <MudTextField Label="Name" @bind-Value="foodItemViewModel.Name" For="@(() => foodItemViewModel.Name)" />
+            <MudTextField Label="Name" @bind-Value="foodItemViewModel.Calories" For="@(() => foodItemViewModel.Calories)" />
+            <MudTextField Label="Name" @bind-Value="foodItemViewModel.Carbohydrates" For="@(() => foodItemViewModel.Carbohydrates)" />
+            <MudTextField Label="Name" @bind-Value="foodItemViewModel.Proteins" For="@(() => foodItemViewModel.Proteins)" />
+            <MudTextField Label="Name" @bind-Value="foodItemViewModel.Fats" For="@(() => foodItemViewModel.Fats)" />
+            <MudTextField Label="Name" @bind-Value="foodItemViewModel.SaturatedFats" For="@(() => foodItemViewModel.SaturatedFats)" />
+            <MudAutocomplete T="string" Label="Brand" @bind-Value="value1" SearchFunc="@Search1"
+                         ResetValueOnEmptyText="@resetValueOnEmptyText"
+                         CoerceText="@coerceText" CoerceValue="@coerceValue" />
+                        
+            <MudFab ButtonType="ButtonType.Submit" Color="Color.Primary" Icon="@Icons.Material.Filled.Save" Size="@Size.Medium" Class="ml-auto mt-5"></MudFab>*@
         </EditForm>
     }
 </MudContainer>

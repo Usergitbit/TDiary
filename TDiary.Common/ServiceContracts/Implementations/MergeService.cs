@@ -112,6 +112,7 @@ namespace TDiary.Common.ServiceContracts.Implementations
             var result = new List<EventResolution>();
             foreach (var outgoingEvent in outgoingEvents)
             {
+                // TODO: need to check relations as well
                 var isAffectedByIncoming = incomingEventResolutionState.AffectedEntities.FirstOrDefault(e => e.AffectedEntityId == outgoingEvent.EntityId) != null;
                 if (!isAffectedByIncoming)
                 {
