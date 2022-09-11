@@ -14,133 +14,58 @@ namespace TDiary.Web.Pages
 {
     public partial class FoodItemEdit : IDisposable
     {
-        private readonly IDictionary<string, object> Changes = new Dictionary<string, object>();
-        private FoodItemViewModel initialFoodItemViewModel;
-        private FoodItemViewModel foodItemViewModel = new();
-        private EditContext EditContext;
-        private bool isBusy;
-        private Guid UserId;
-
-        [Parameter]
-        public Guid Id { get; set; }
-
         [Inject]
         public WebMapper WebMapper { get; set; }
 
-        protected override async Task OnInitializedAsync()
+        protected override string AfterSubmitRoute => "foodItems";
+        protected override async Task<FoodItemViewModel> Get()
         {
-            isBusy = true;
-            EditContext = new(foodItemViewModel);
-            UserId = await GetUserId();
-            var isOnline = await NetworkStateService.IsOnline();
-            if (isOnline)
-            {
-                await SynchronizationService.Synchronize(UserId);
-            }
+            var foodItem = await EntityQueryService.GetFoodItem(Id);
+            var foodItemViewModel = WebMapper.Map(foodItem);
 
-            if (Id != Guid.Empty)
-            {
-                var foodItem = await EntityQueryService.GetFoodItem(Id);
-                foodItemViewModel = WebMapper.Map(foodItem);
-                initialFoodItemViewModel = WebMapper.Map(foodItem);
-            }
-
-            EditContext.OnFieldChanged += OnFieldChanged;
-            isBusy = false;
+            return foodItemViewModel;
         }
-
-        private async Task<Guid> GetUserId()
+        protected override async Task<FoodItemViewModel> GetInitial()
         {
-            var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
-            var claims = user.Claims;
-            var userIdClaim = claims.FirstOrDefault(c => c.Type == "id").Value;
-            var userId = Guid.Parse(userIdClaim);
+            var foodItem = await EntityQueryService.GetFoodItem(Id);
+            var foodItemViewModel = WebMapper.Map(foodItem);
 
-            return userId;
+            return foodItemViewModel;
         }
-
-        public Task OnValidSubmit()
+        protected override Event CreateInsertEvent()
         {
-            if (foodItemViewModel.Id != Guid.Empty)
-            {
-                return Update();
-            }
-            else
-            {
-                return Add();
-            }
-        }
+            var foodItem = WebMapper.Map(Model);
+            var insertEvent = DefaultEventFactory.CreateInsertEvent(foodItem, UserId);
 
-        private async Task Add()
+            return insertEvent;
+        }
+        protected override Event CreateUpdateEvent()
         {
-            foodItemViewModel.Id = Guid.NewGuid();
-            foodItemViewModel.UserId = UserId;
-            var eventEntity = new Event
-            {
-                Id = Guid.NewGuid(),
-                UserId = UserId,
-                CreatedAt = DateTime.Now,
-                CreatedAtUtc = DateTime.UtcNow,
-                Data = JsonSerializer.Serialize(foodItemViewModel),
-                Entity = "FoodItem",
-                EntityId = foodItemViewModel.Id,
-                EventType = EventType.Insert,
-                TimeZone = TimeZoneInfo.Local.Id,
-                Version = 1,
-            };
+            var foodItem = WebMapper.Map(Model);
+            var initialFoodItem = WebMapper.Map(InitialModel);
+            var updateEvent = DefaultEventFactory.CreateUpdateEvent(foodItem, initialFoodItem, Changes);
 
-            await EventService.Add(eventEntity);
-            NavigationManager.NavigateTo("foodItems");
+            return updateEvent;
         }
-
-        private async Task Update()
-        {
-            var eventEntity = new Event
-            {
-                Id = Guid.NewGuid(),
-                UserId = UserId,
-                CreatedAt = DateTime.Now,
-                CreatedAtUtc = DateTime.UtcNow,
-                Data = JsonSerializer.Serialize(foodItemViewModel),
-                InitialData = JsonSerializer.Serialize(initialFoodItemViewModel),
-                Entity = "FoodItem",
-                EntityId = foodItemViewModel.Id,
-                EventType = EventType.Update,
-                TimeZone = TimeZoneInfo.Local.Id,
-                Version = 1,
-                Changes = JsonSerializer.Serialize(Changes)
-            };
-
-            await EventService.Add(eventEntity);
-            NavigationManager.NavigateTo("foodItems");
-        }
-
-
-        private void OnFieldChanged(object sender, FieldChangedEventArgs e)
+        protected override void OnFieldChanged(object sender, FieldChangedEventArgs e)
         {
             // TODO: maybe abstract this into a service
             switch (e.FieldIdentifier.FieldName)
             {
-                case nameof(foodItemViewModel.Name):
-                    if (!Changes.ContainsKey(nameof(foodItemViewModel.Name)))
+                case nameof(Model.Name):
+                    if (!Changes.ContainsKey(nameof(Model.Name)))
                     {
-                        Changes.Add(nameof(foodItemViewModel.Name), foodItemViewModel.Name);
+                        Changes.Add(nameof(Model.Name), Model.Name);
                     }
                     else
                     {
-                        Changes[nameof(foodItemViewModel.Name)] = foodItemViewModel.Name;
+                        Changes[nameof(Model.Name)] = Model.Name;
                     }
                     break;
                 default:
                     Console.WriteLine($"Change for field {e.FieldIdentifier.FieldName} not handled.");
                     break;
             }
-        }
-
-        public void Dispose()
-        {
-            EditContext.OnFieldChanged -= OnFieldChanged;
         }
     }
 }

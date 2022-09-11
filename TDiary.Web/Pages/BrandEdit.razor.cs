@@ -31,13 +31,13 @@ namespace TDiary.Web.Pages
         }
         protected override Event CreateInsertEvent()
         {
-            var insertEvent = DefaultEventFactory.CreateInsertEvent(Entity, UserId);
+            var insertEvent = DefaultEventFactory.CreateInsertEvent(Model, UserId);
 
             return insertEvent;
         }
         protected override Event CreateUpdateEvent()
         {
-            var updateEvent = DefaultEventFactory.CreateUpdateEvent(Entity, InitialEntity, Changes);
+            var updateEvent = DefaultEventFactory.CreateUpdateEvent(Model, InitialModel, Changes);
 
             return updateEvent;
         }
@@ -46,14 +46,14 @@ namespace TDiary.Web.Pages
             // TODO: maybe abstract this into a service
             switch (e.FieldIdentifier.FieldName)
             {
-                case nameof(Entity.Name):
-                    if (!Changes.ContainsKey(nameof(Entity.Name)))
+                case nameof(Model.Name):
+                    if (!Changes.ContainsKey(nameof(Model.Name)))
                     {
-                        Changes.Add(nameof(Entity.Name), Entity.Name);
+                        Changes.Add(nameof(Model.Name), Model.Name);
                     }
                     else
                     {
-                        Changes[nameof(Entity.Name)] = Entity.Name;
+                        Changes[nameof(Model.Name)] = Model.Name;
                     }
                     break;
                 default:

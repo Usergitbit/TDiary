@@ -3,13 +3,9 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
-using TDiary.Common.Models.Base;
 using TDiary.Common.Models.Entities;
-using TDiary.Common.Models.Entities.Enums;
 using TDiary.Common.ServiceContracts;
 using TDiary.Common.ServiceContracts.Implementations;
 using TDiary.Web.Services;
@@ -27,19 +23,26 @@ namespace TDiary.Web.Pages.Base
         [Inject] protected NavigationManager NavigationManager { get; set; }
         [Inject] protected DefaultEventFactory DefaultEventFactory { get; set; }
 
+        [Parameter] public Guid Id { get; set; }
+
         protected readonly Dictionary<string, object> Changes = new Dictionary<string, object>();
-        protected T InitialEntity;
-        protected T Entity = new();
+        protected T InitialModel;
+        protected T Model = new();
         protected EditContext EditContext;
         protected bool isBusy;
         protected Guid UserId;
 
-        [Parameter] public Guid Id { get; set; }
+        protected abstract string AfterSubmitRoute { get; }
+        protected abstract Task<T> Get();
+        protected abstract Task<T> GetInitial();
+        protected abstract Event CreateInsertEvent();
+        protected abstract Event CreateUpdateEvent();
+        protected abstract void OnFieldChanged(object sender, FieldChangedEventArgs e);
 
         protected override async Task OnInitializedAsync()
         {
             isBusy = true;
-            EditContext = new(Entity);
+            EditContext = new(Model);
             UserId = await GetUserId();
             var isOnline = await NetworkStateService.IsOnline();
             if (isOnline)
@@ -49,20 +52,14 @@ namespace TDiary.Web.Pages.Base
 
             if (Id != Guid.Empty)
             {
-                Entity = await Get();
-                InitialEntity = await GetInitial();
+                Model = await Get();
+                InitialModel = await GetInitial();
             }
 
             EditContext.OnFieldChanged += OnFieldChanged;
             isBusy = false;
         }
 
-        protected abstract string AfterSubmitRoute { get; }
-        protected abstract Task<T> Get();
-        protected abstract Task<T> GetInitial();
-        protected abstract Event CreateInsertEvent();
-        protected abstract Event CreateUpdateEvent();
-        protected abstract void OnFieldChanged(object sender, FieldChangedEventArgs e);
 
         protected virtual async Task<Guid> GetUserId()
         {
@@ -74,7 +71,6 @@ namespace TDiary.Web.Pages.Base
 
             return userId;
         }
-
 
         public virtual async Task OnValidSubmit()
         {

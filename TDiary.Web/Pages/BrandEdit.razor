@@ -1,9 +1,9 @@
 ﻿@page "/brands/{id:guid}"
 
-@inherits EditBase<Brand>;
-
 @using TDiary.Common.Models.Entities
 @using TDiary.Web.Pages.Base
+
+@inherits EditBase<Brand>;
 
 <div class="d-flex mb-5">
     <h2 class="d-flex align-center">Edit Brand</h2>
@@ -17,7 +17,7 @@
     else
     {
         <EditForm EditContext="@EditContext" OnValidSubmit="OnValidSubmit">
-            <MudTextField Label="Name" @bind-Value="Entity.Name" For="@(() => Entity.Name)" />
+            <MudTextField Label="Name" @bind-Value="Model.Name" For="@(() => Model.Name)" />
 
             <MudFab ButtonType="ButtonType.Submit" Color="Color.Primary" Icon="@Icons.Material.Filled.Save" Size="@Size.Medium" Class="ml-auto mt-5"></MudFab>
         </EditForm>

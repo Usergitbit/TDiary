@@ -1,19 +1,9 @@
 ﻿@page "/foodItems/{id:guid}"
 
-@using Microsoft.AspNetCore.Components.Authorization
-@using TDiary.Common.ServiceContracts
-@using TDiary.Web.Services
-@using TDiary.Web.Services.Interfaces
-@using TDiary.Common.Models.Entities
-@using System.Text.Json
-@using TDiary.Common.Models.Entities.Enums
+@using TDiary.Web.Pages.Base
+@using TDiary.Web.ViewModels
 
-@inject AuthenticationStateProvider authenticationStateProvider
-@inject ISynchronizationService SynchronizationService
-@inject NetworkStateService NetworkStateService
-@inject IEntityQueryService EntityQueryService
-@inject IEventService EventService
-@inject NavigationManager NavigationManager
+@inherits EditBase<FoodItemViewModel>;
 
 <div class="d-flex mb-5">
     <h2 class="d-flex align-center">Edit Food item</h2>
@@ -27,12 +17,13 @@
     else
     {
         <EditForm EditContext="@EditContext" OnValidSubmit="OnValidSubmit">
-@*            <MudTextField Label="Name" @bind-Value="foodItemViewModel.Name" For="@(() => foodItemViewModel.Name)" />
-            <MudTextField Label="Name" @bind-Value="foodItemViewModel.Calories" For="@(() => foodItemViewModel.Calories)" />
-            <MudTextField Label="Name" @bind-Value="foodItemViewModel.Carbohydrates" For="@(() => foodItemViewModel.Carbohydrates)" />
-            <MudTextField Label="Name" @bind-Value="foodItemViewModel.Proteins" For="@(() => foodItemViewModel.Proteins)" />
-            <MudTextField Label="Name" @bind-Value="foodItemViewModel.Fats" For="@(() => foodItemViewModel.Fats)" />
-            <MudTextField Label="Name" @bind-Value="foodItemViewModel.SaturatedFats" For="@(() => foodItemViewModel.SaturatedFats)" />
+            <MudTextField Label="Name" @bind-Value="foodItemViewModel.Name" For="@(() => foodItemViewModel.Name)" />
+            <MudTextField Label="Calories" @bind-Value="foodItemViewModel.Calories" For="@(() => foodItemViewModel.Calories)" />
+            <MudTextField Label="Carbohydrates" @bind-Value="foodItemViewModel.Carbohydrates" For="@(() => foodItemViewModel.Carbohydrates)" />
+            <MudTextField Label="Proteins" @bind-Value="foodItemViewModel.Proteins" For="@(() => foodItemViewModel.Proteins)" />
+            <MudTextField Label="Fats" @bind-Value="foodItemViewModel.Fats" For="@(() => foodItemViewModel.Fats)" />
+            <MudTextField Label="SaturatedFats" @bind-Value="foodItemViewModel.SaturatedFats" For="@(() => foodItemViewModel.SaturatedFats)" />
+@*            
             <MudAutocomplete T="string" Label="Brand" @bind-Value="value1" SearchFunc="@Search1"
                          ResetValueOnEmptyText="@resetValueOnEmptyText"
                          CoerceText="@coerceText" CoerceValue="@coerceValue" />

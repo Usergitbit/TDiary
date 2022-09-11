@@ -27,5 +27,23 @@ namespace TDiary.Web.Services
                 BrandId= foodItem.Brand?.Id
             };
         }
+
+        public FoodItem Map(FoodItemViewModel foodItemViewModel)
+        {
+            var foodItem = new FoodItem
+            {
+                BrandId = foodItemViewModel.BrandId,
+                Calories = foodItemViewModel.Calories,
+                Carbohydrates = foodItemViewModel.Carbohydrates,
+                Fats = foodItemViewModel.Fats,
+                Id = foodItemViewModel.Id,
+                UserId = foodItemViewModel.UserId,
+                SaturatedFats = foodItemViewModel.SaturatedFats,
+                Proteins = foodItemViewModel.Proteins
+            };
+
+
+            return foodItem;
+        }
     }
 }
