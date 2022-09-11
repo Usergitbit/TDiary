@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 using TDiary.Common.Models.Base;
 
 namespace TDiary.Common.Models.Entities
@@ -14,7 +15,9 @@ namespace TDiary.Common.Models.Entities
         public double Fats { get; set; }
         public double SaturatedFats { get; set; }
         public Guid? BrandId { get; set; }
+        [JsonIgnore]
         public Brand Brand { get; set; }
+        [JsonIgnore]
         public List<DailyFoodItem> DailyFoodItems { get; set; } = new List<DailyFoodItem>();
     }
 }

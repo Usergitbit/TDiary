@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TDiary.Common.Models.Entities;
+using TDiary.Web.IndexedDB;
 using TDiary.Web.Services.Interfaces;
 using TG.Blazor.IndexedDB;
 
@@ -19,24 +20,39 @@ namespace TDiary.Web.Services
 
         public async Task<bool> Validate(Event eventEntity)
         {
-            bool result;
+            bool hasDependantEntities;
             switch (eventEntity.Entity)
             {
                 case "Brand":
-                    result =  await HasRelatingEntites(eventEntity.EntityId);
+                    hasDependantEntities = await BrandHasDependantEntites(eventEntity.EntityId);
+                    break;
+                case "FoodItem":
+                    hasDependantEntities = await FoodItemsHasDependantEntities(eventEntity.EntityId);
                     break;
                 default:
                     throw new NotImplementedException($"Entity relations validation for {eventEntity.Entity} not implemented.");
 
             }
 
-            return result;
+            return !hasDependantEntities;
         }
 
-        private Task<bool> HasRelatingEntites(Guid entityId)
+        private Task<bool> FoodItemsHasDependantEntities(Guid entityId)
         {
-            // TODO: get food items that have brand id == entity id
             return Task.FromResult(false);
+        }
+
+        private async Task<bool> BrandHasDependantEntites(Guid entityId)
+        {
+            var indexSearch = new StoreIndexQuery<string>
+            {
+                Storename = StoreNameConstants.FoodItems,
+                IndexName = "brandId",
+                QueryValue = entityId.ToString(),
+            };
+            var relatedentites = await dbManager.GetAllRecordsByIndex<string, FoodItem>(indexSearch) ?? new List<FoodItem>();
+
+            return relatedentites.Count != 0;
         }
     }
 }

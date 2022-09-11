@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MudBlazor;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -27,10 +28,14 @@ namespace TDiary.Web.Services
                 case nameof(Brand):
                     await PlayBrandEvent(eventEntity);
                     break;
+                case nameof(FoodItem):
+                    await PlayFoodItemEvent(eventEntity);
+                    break;
                 default:
                     throw new NotImplementedException($"{nameof(PlayEvent)} for entity {eventEntity.Entity} not implemeneted in {typeof(EventPlayerService).FullName}.");
             }
         }
+
 
         public async Task UndoEvent(Event eventEntity)
         {
@@ -38,6 +43,9 @@ namespace TDiary.Web.Services
             {
                 case nameof(Brand):
                     await UndoBrandEvent(eventEntity);
+                    break;
+                case nameof(FoodItem):
+                    await UndoFoodItemEvent(eventEntity);
                     break;
                 default:
                     throw new NotImplementedException($"{nameof(UndoEvent)} for entity {eventEntity.Entity} not implemeneted in {typeof(EventPlayerService).FullName}.");
@@ -68,6 +76,31 @@ namespace TDiary.Web.Services
             }
         }
 
+        private async Task UndoFoodItemEvent(Event eventEntity)
+        {
+            FoodItem foodItem;
+            switch (eventEntity.EventType)
+            {
+                case EventType.Insert:
+                    await dbManager.DeleteRecord(StoreNameConstants.FoodItems, eventEntity.EntityId);
+                    break;
+                case EventType.Update:
+                    foodItem = JsonSerializer.Deserialize<FoodItem>(eventEntity.Data);
+                    await dbManager.UpdateRecord(new StoreRecord<FoodItem> { Storename = StoreNameConstants.FoodItems, Data = foodItem });
+                    break;
+                case EventType.Delete:
+                    foodItem = JsonSerializer.Deserialize<FoodItem>(eventEntity.Data);
+                    foodItem.CreatedAt = DateTime.Now;
+                    foodItem.CreatedAtUtc = DateTime.UtcNow;
+                    foodItem.TimeZone = TimeZoneInfo.Local.Id;
+                    await dbManager.AddRecord(new StoreRecord<FoodItem> { Storename = StoreNameConstants.FoodItems, Data = foodItem });
+                    break;
+                default:
+                    throw new NotImplementedException($"Undo for event type {eventEntity.EventType} entity {eventEntity.Entity} not implemented.");
+            }
+        }
+
+
         private async Task PlayBrandEvent(Event eventEntity)
         {
             Brand brand;
@@ -89,6 +122,32 @@ namespace TDiary.Web.Services
                     break;
                 case EventType.Delete:
                     await dbManager.DeleteRecord(StoreNameConstants.Brands, eventEntity.EntityId);
+                    break;
+                default:
+                    throw new NotImplementedException($"Play for event type {eventEntity.EventType} entity {eventEntity.Entity} not implemented.");
+            }
+        }
+
+        private async Task PlayFoodItemEvent(Event eventEntity)
+        {
+            FoodItem foodItem;
+            switch (eventEntity.EventType)
+            {
+                case EventType.Insert:
+                    foodItem = JsonSerializer.Deserialize<FoodItem>(eventEntity.Data);
+                    foodItem.CreatedAt = DateTime.Now;
+                    foodItem.CreatedAtUtc = DateTime.UtcNow;
+                    foodItem.TimeZone = TimeZoneInfo.Local.Id;
+                    await dbManager.AddRecord(new StoreRecord<FoodItem> { Storename = StoreNameConstants.FoodItems, Data = foodItem });
+                    break;
+                case EventType.Update:
+                    foodItem = JsonSerializer.Deserialize<FoodItem>(eventEntity.Data);
+                    foodItem.ModifiedtAt = DateTime.Now;
+                    foodItem.ModifiedAtUtc = DateTime.UtcNow;
+                    await dbManager.UpdateRecord(new StoreRecord<FoodItem> { Storename = StoreNameConstants.FoodItems, Data = foodItem });
+                    break;
+                case EventType.Delete:
+                    await dbManager.DeleteRecord(StoreNameConstants.FoodItems, eventEntity.EntityId);
                     break;
                 default:
                     throw new NotImplementedException($"Play for event type {eventEntity.EventType} entity {eventEntity.Entity} not implemented.");

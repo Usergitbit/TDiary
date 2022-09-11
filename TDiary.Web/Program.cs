@@ -116,7 +116,19 @@ namespace TDiary.Web
                     .Property("name")
                     .Build();
 
-                dbStore.Stores.AddRange(new[] { eventsSchema, brandsSchema, unsynchronizedEventsSchema });
+                var foodItemSchema = new SchemaBuilder<Brand>()
+                    .StoreName(StoreNameConstants.FoodItems)
+                    .BaseProperties()
+                    .Property("name")
+                    .Property("calories")
+                    .Property("carbohydrates")
+                    .Property("proteins")
+                    .Property("fats")
+                    .Property("saturatedFats")
+                    .Property("brandId")
+                    .Build();
+
+                dbStore.Stores.AddRange(new[] { eventsSchema, brandsSchema, unsynchronizedEventsSchema, foodItemSchema });
             });
 
             await builder.Build().RunAsync();

@@ -10,5 +10,8 @@ namespace TDiary.Common.ServiceContracts
     {
         Task<List<Brand>> GetBrands(Guid userId);
         Task<Brand> GetBrand(Guid brandId);
+        Task<List<FoodItem>> GetFoodItems(Guid userId);
+        Task<FoodItem> GetFoodItem(Guid foodItemId);
+        Task<List<FoodItem>> GetFoodItemsByBrandId(Guid brandId);
     }
 }

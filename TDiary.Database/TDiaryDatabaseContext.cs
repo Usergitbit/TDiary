@@ -16,7 +16,7 @@ namespace TDiary.Database
         public DbSet<DailyFoodItem> DailyFoodItems { get; set; }
         public DbSet<DietProfile> DietProfiles { get; set; }
         public DbSet<Event> Events { get; set; }
-        public DbSet<FoodItem> FoodItems { get; set; }
+        public DbSet<Brand> FoodItems { get; set; }
         public DbSet<Plate> Plates { get; set; }
 
         public TDiaryDatabaseContext(DbContextOptions<TDiaryDatabaseContext> options)

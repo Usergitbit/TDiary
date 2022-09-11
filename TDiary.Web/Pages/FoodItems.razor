@@ -1,23 +1,23 @@
-﻿@page "/brands"
+﻿@page "/foodItems"
 
 @using TDiary.Common.Models.Entities
 
 @attribute [Authorize]
 
 <div class="d-flex mb-5">
-	<h2 class="d-flex align-center">Brands</h2>
+	<h2 class="d-flex align-center">Food Items</h2>
 </div>
 
 <MudContainer MaxWidth="MaxWidth.False" Class="ml-0 mr-0 pa-0">
 	@if (!IsBusy)
 	{
-		<MudTable Items="@BrandsList" Hover="true" Loading="@IsLoadingBrands" LoadingProgressColor="Color.Primary" OnRowClick="RowClickEvent" T="Brand">
+		<MudTable Items="@FoodItemsList" Hover="true" Loading="@IsLoadingFoodItems" LoadingProgressColor="Color.Primary" OnRowClick="RowClickEvent" T="FoodItem">
 			<RowTemplate>
 				<MudTd>
 					@context.Name
 				</MudTd>
 				<MudTd Class="d-flex">
-					<MudFab ButtonType="ButtonType.Button" Color="Color.Error" Icon="@Icons.Material.Filled.Delete" Size="@Size.Medium" Class="ml-auto mt-5" OnClick="async () => await OnDeleteBrandClick(context)"></MudFab>
+					<MudFab ButtonType="ButtonType.Button" Color="Color.Error" Icon="@Icons.Material.Filled.Delete" Size="@Size.Medium" Class="ml-auto mt-5" OnClick="async () => await OnDeleteFoodItemClick(context)"></MudFab>
 				</MudTd>
 			</RowTemplate>
 		</MudTable>

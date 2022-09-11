@@ -33,9 +33,42 @@ namespace TDiary.Web.Services
                 IndexName = "userId",
                 QueryValue = userId.ToString(),
             };
-            var results = await dbManager.GetAllRecordsByIndex<string, Brand>(indexSearch);
+            var results = await dbManager.GetAllRecordsByIndex<string, Brand>(indexSearch) ?? new List<Brand>();
 
             return results.OrderBy(b => b.CreatedAtUtc).ToList();
+        }
+
+        public async Task<List<FoodItem>> GetFoodItems(Guid userId)
+        {
+            var indexSearch = new StoreIndexQuery<string>
+            {
+                Storename = StoreNameConstants.FoodItems,
+                IndexName = "userId",
+                QueryValue = userId.ToString(),
+            };
+            var results = await dbManager.GetAllRecordsByIndex<string, FoodItem>(indexSearch) ?? new List<FoodItem>();
+
+            return results.OrderBy(b => b.CreatedAtUtc).ToList();
+        }
+
+        public async Task<FoodItem> GetFoodItem(Guid foodItemId)
+        {
+            var foodItem = await dbManager.GetRecordById<Guid, FoodItem>(StoreNameConstants.FoodItems, foodItemId);
+
+            return foodItem;
+        }
+
+        public async Task<List<FoodItem>> GetFoodItemsByBrandId(Guid brandId)
+        {
+            var indexSearch = new StoreIndexQuery<string>
+            {
+                Storename = StoreNameConstants.FoodItems,
+                IndexName = "brandId",
+                QueryValue = brandId.ToString(),
+            };
+            var results = await dbManager.GetAllRecordsByIndex<string, FoodItem>(indexSearch) ?? new List<FoodItem>();
+
+            return results.ToList();
         }
     }
 }

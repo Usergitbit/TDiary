@@ -1,41 +1,39 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
+﻿using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
 using TDiary.Common.Models.Entities;
-using TDiary.Common.Models.Entities.Enums;
 using TDiary.Common.ServiceContracts;
 using TDiary.Web.Services;
 using TDiary.Web.Services.Interfaces;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System;
+using TDiary.Common.Models.Entities.Enums;
+using System.Linq;
 
 namespace TDiary.Web.Pages
 {
-    public partial class Brands
+    public partial class FoodItems
     {
         [Inject]
         IEventService EventService { get; set; }
         [Inject]
         IEntityQueryService EntityQueryService { get; set; }
         [Inject]
-        AuthenticationStateProvider authenticationStateProvider { get; set; }
+        AuthenticationStateProvider AuthenticationStateProvider { get; set; }
         [Inject]
         NetworkStateService NetworkStateService { get; set; }
         [Inject]
         ISynchronizationService SynchronizationService { get; set; }
         [Inject]
         NavigationManager NavigationManager { get; set; }
-        [Inject] 
-        IDialogService DialogService { get; set; }
         [Inject]
-        ISnackbar Snackbar { get; set; }
-        public Brand Brand { get; set; } = new();
-        public List<Brand> BrandsList { get; set; } = new List<Brand>();
+        IDialogService DialogService { get; set; }
+        public FoodItem FoodItem { get; set; } = new();
+        public List<FoodItem> FoodItemsList { get; set; } = new List<FoodItem>();
         public bool IsBusy { get; set; }
-        public bool IsLoadingBrands { get; set; } = true;
+        public bool IsLoadingFoodItems { get; set; } = true;
 
         protected override async Task OnInitializedAsync()
         {
@@ -53,23 +51,23 @@ namespace TDiary.Web.Pages
         public async Task Add()
         {
             var userId = await GetUserId();
-            Brand.UserId = userId;
-            Brand.Id = Guid.NewGuid();
+            FoodItem.UserId = userId;
+            FoodItem.Id = Guid.NewGuid();
             var addBrandEvent = new Event
             {
                 CreatedAt = DateTime.Now,
                 CreatedAtUtc = DateTime.UtcNow,
-                Data = JsonSerializer.Serialize(Brand),
-                Entity = "Brand",
+                Data = JsonSerializer.Serialize(FoodItem),
+                Entity = "FoodItem",
                 EventType = EventType.Insert,
                 Id = Guid.NewGuid(),
                 TimeZone = TimeZoneInfo.Local.Id,
                 UserId = userId,
                 Version = 1,
-                EntityId = Brand.Id
+                EntityId = FoodItem.Id
             };
             await EventService.Add(addBrandEvent);
-            Brand = new();
+            FoodItem = new();
             await Get();
         }
 
@@ -80,24 +78,24 @@ namespace TDiary.Web.Pages
             for (var i = 0; i < 1000; i++)
             {
                 var userId = await GetUserId();
-                Brand.UserId = userId;
-                Brand.Id = Guid.NewGuid();
-                Brand.Name = $"Brand {Brand.Id}";
+                FoodItem.UserId = userId;
+                FoodItem.Id = Guid.NewGuid();
+                FoodItem.Name = $"Brand {FoodItem.Id}";
                 var addBrandEvent = new Event
                 {
                     CreatedAt = DateTime.Now,
                     CreatedAtUtc = DateTime.UtcNow,
-                    Data = JsonSerializer.Serialize(Brand),
+                    Data = JsonSerializer.Serialize(FoodItem),
                     Entity = "Brand",
                     EventType = EventType.Insert,
                     Id = Guid.NewGuid(),
                     TimeZone = TimeZoneInfo.Local.Id,
                     UserId = userId,
                     Version = 1,
-                    EntityId = Brand.Id
+                    EntityId = FoodItem.Id
                 };
                 brandEvents.Add(addBrandEvent);
-                Brand = new();
+                FoodItem = new();
             }
             await EventService.BulkAdd(brandEvents);
             await Get();
@@ -108,22 +106,22 @@ namespace TDiary.Web.Pages
             try
             {
                 var userId = await GetUserId();
-                var result = await EntityQueryService.GetBrands(userId);
-                BrandsList = new List<Brand>(result);
+                var result = await EntityQueryService.GetFoodItems(userId);
+                FoodItemsList = new List<FoodItem>(result);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"{ex.Message}\n{ex.StackTrace}");
             }
             finally
             {
-                IsLoadingBrands = false;
+                IsLoadingFoodItems = false;
             }
         }
 
         private async Task<Guid> GetUserId()
         {
-            var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             var user = authState.User;
             var claims = user.Claims;
             var userIdClaim = claims.FirstOrDefault(c => c.Type == "id");
@@ -133,32 +131,25 @@ namespace TDiary.Web.Pages
             return userId;
         }
 
-        private void RowClickEvent(TableRowClickEventArgs<Brand> tableRowClickEventArgs)
+        private void RowClickEvent(TableRowClickEventArgs<FoodItem> tableRowClickEventArgs)
         {
-            var clickedBrand = tableRowClickEventArgs.Item;
-            if (clickedBrand != null)
+            var clickedFoodItem = tableRowClickEventArgs.Item;
+            if (clickedFoodItem != null)
             {
-                NavigationManager.NavigateTo($"brand/{clickedBrand.Id}");
+                NavigationManager.NavigateTo($"foodItems/{clickedFoodItem.Id}");
             }
         }
 
         private void OnAddBrandClick()
         {
-            NavigationManager.NavigateTo($"brands/{Guid.Empty}");
+            NavigationManager.NavigateTo($"foodItems/{Guid.Empty}");
         }
 
-        private async Task OnDeleteBrandClick(Brand brand)
+        private async Task OnDeleteFoodItemClick(FoodItem foodItem)
         {
             try
             {
-                var brandFoodItems = await EntityQueryService.GetFoodItemsByBrandId(brand.Id);
-                if(brandFoodItems.Count != 0)
-                {
-                    var usedBy = string.Join(", ", brandFoodItems.Select(bfi => bfi.Name));
-                    Snackbar.Add($"Can't delete: brand in use by: {usedBy}", Severity.Error);
-                    return;
-                }
-
+                //TODO validate deletion
                 var result = await DialogService.ShowMessageBox(
                     "Warning",
                     "Deleting can not be undone! Continue?",
@@ -170,10 +161,10 @@ namespace TDiary.Web.Pages
                     {
                         CreatedAt = DateTime.Now,
                         CreatedAtUtc = DateTime.UtcNow,
-                        Entity = "Brand",
+                        Entity = "FoodItem",
                         EventType = EventType.Delete,
-                        Data = JsonSerializer.Serialize(brand),
-                        EntityId = brand.Id,
+                        Data = JsonSerializer.Serialize(foodItem),
+                        EntityId = foodItem.Id,
                         Id = Guid.NewGuid(),
                         TimeZone = TimeZoneInfo.Local.Id,
                         UserId = await GetUserId(),
@@ -184,7 +175,7 @@ namespace TDiary.Web.Pages
                     await Get();
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"{ex.Message}\n{ex.StackTrace}");
             }

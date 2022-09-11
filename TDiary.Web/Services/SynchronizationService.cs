@@ -70,7 +70,7 @@ namespace TDiary.Web.Services
         public async Task Synchronize(Guid userId)
         {
             // TODO: check if sts is online as well
-
+            // TODO: check if token is valid - check case when token expired - redirect to login?
             var apiAvailable = await networkStateService.IsApiOnline();
             if (!apiAvailable)
             {
@@ -133,6 +133,7 @@ namespace TDiary.Web.Services
                             await Push(eventResolution.Event);
                             await dbManager.DeleteRecord(StoreNameConstants.UnsynchronizedEvents, eventResolution.Event.Id);
                             break;
+                        //TODO: test this
                         case EventResolutionOperation.PushIfValid:
                             if (await entityRelationsValidator.Validate(eventResolution.Event))
                             {

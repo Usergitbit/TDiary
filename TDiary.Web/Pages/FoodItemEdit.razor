@@ -1,4 +1,4 @@
-﻿@page "/brands/{id:guid}"
+﻿@page "/foodItems/{id:guid}"
 
 @using Microsoft.AspNetCore.Components.Authorization
 @using TDiary.Common.ServiceContracts
@@ -16,7 +16,7 @@
 @inject NavigationManager NavigationManager
 
 <div class="d-flex mb-5">
-    <h2 class="d-flex align-center">Edit Brand</h2>
+    <h2 class="d-flex align-center">Edit Food item</h2>
 </div>
 
 <MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="ml-0 mr-0 pa-0">
@@ -27,7 +27,7 @@
     else
     {
         <EditForm EditContext="@EditContext" OnValidSubmit="OnValidSubmit">
-            <MudTextField Label="Name" @bind-Value="Brand.Name" For="@(() => Brand.Name)" />
+            <MudTextField Label="Name" @bind-Value="foodItem.Name" For="@(() => foodItem.Name)" />
 
             <MudFab ButtonType="ButtonType.Submit" Color="Color.Primary" Icon="@Icons.Material.Filled.Save" Size="@Size.Medium" Class="ml-auto mt-5"></MudFab>
         </EditForm>
