@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using System;
 using TDiary.Common.Models.Entities;
-using TDiary.Common.Models.Entities.Enums;
 using TDiary.Web.ViewModels;
 using TDiary.Web.Services;
 

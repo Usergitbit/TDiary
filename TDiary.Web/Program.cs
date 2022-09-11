@@ -80,7 +80,6 @@ namespace TDiary.Web
             builder.Services.AddSingleton<WebMapper>();
             builder.Services.AddSingleton<DefaultEventFactory>();
 
-
             builder.Services.AddIndexedDB(dbStore =>
             {
                 dbStore.DbName = "TDiary";
@@ -118,7 +117,7 @@ namespace TDiary.Web
                     .Property("name")
                     .Build();
 
-                var foodItemSchema = new SchemaBuilder<Brand>()
+                var foodItemSchema = new SchemaBuilder<FoodItem>()
                     .StoreName(StoreNameConstants.FoodItems)
                     .BaseProperties()
                     .Property("name")

@@ -23,6 +23,8 @@
 			<MudTextField Label="Proteins" @bind-Value="Model.Proteins" For="@(() => Model.Proteins)" />
 			<MudTextField Label="Fats" @bind-Value="Model.Fats" For="@(() => Model.Fats)" />
 			<MudTextField Label="SaturatedFats" @bind-Value="Model.SaturatedFats" For="@(() => Model.SaturatedFats)" />
+
+			<MudFab ButtonType="ButtonType.Submit" Color="Color.Primary" Icon="@Icons.Material.Filled.Save" Size="@Size.Medium" Class="ml-auto mt-5"></MudFab>
 			@*
 		<MudAutocomplete T="string" Label="Brand" @bind-Value="value1" SearchFunc="@Search1"
 		ResetValueOnEmptyText="@resetValueOnEmptyText"

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Xml.Linq;
 using TDiary.Common.Models.Entities;
 using TDiary.Web.ViewModels;
 
@@ -39,7 +40,8 @@ namespace TDiary.Web.Services
                 Id = foodItemViewModel.Id,
                 UserId = foodItemViewModel.UserId,
                 SaturatedFats = foodItemViewModel.SaturatedFats,
-                Proteins = foodItemViewModel.Proteins
+                Proteins = foodItemViewModel.Proteins,
+                Name = foodItemViewModel.Name,
             };
 
 
